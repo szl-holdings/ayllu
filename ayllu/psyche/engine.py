@@ -15,6 +15,9 @@ from ayllu.psyche.graph import TypedHypergraph
 from ayllu.psyche.lock import HumanLock
 from ayllu.psyche.morphisms import ArrowContext, Morphism, identity, run_pipeline
 from ayllu.psyche.neural import Yuyay
+from ayllu.psyche.kawsay import ORGANS as KAWSAY_ORGANS
+from ayllu.psyche.kawsay import beat as kawsay_beat
+from ayllu.psyche.kawsay import sense as kawsay_sense
 from ayllu.psyche.seats import SEAT_ORGANS, roster_typed, seat_morphism
 from ayllu.psyche.types import (
     ENERGY,
@@ -244,6 +247,9 @@ class Psyche:
             "seats": roster_typed(),
             "organs": SEAT_ORGANS,
             "pulses": self.pulses,
+            "organsLive": list(KAWSAY_ORGANS),
+            "presence": "CONJECTURE",
+            "agi": "CONJECTURE",
             "chainHead": self.prev_hash,
             "lambda": LAMBDA,
             "joules": ENERGY,
@@ -260,9 +266,104 @@ class Psyche:
             "lock": self.lock.engaged,
             "seats": 11,
             "organs": 5,
+            "pulses": self.pulses,
+            "presence": "CONJECTURE",
+            "agi": "CONJECTURE",
             "honesty": Honesty.MEASURED.value,
             "lambda": LAMBDA,
             "joules": ENERGY,
+        }
+
+
+    def sense(self, cue: str, k: int = 6) -> dict[str, Any]:
+        hit = kawsay_sense(cue, k=k)
+        minted = self._mint(
+            "sense",
+            "ALLOW",
+            hit.get("honesty") or Honesty.UNAVAILABLE.value,
+            {"cue": cue, "k": k},
+            "Second-brain handles. SOFTWARE. Never LIVE retrieval.",
+        )
+        return {**hit, **minted}
+
+    def graft(self, cue: str, k: int = 6) -> dict[str, Any]:
+        """Imprint second-brain handles into Yuyay. Lock required. SOFTWARE honesty."""
+        gate = self.lock.admit("imprint", state_changing=True)
+        if gate["decision"] != Decision.ALLOW.value:
+            minted = self._mint("graft", "BLOCKED", Honesty.MEASURED.value, {"cue": cue}, "; ".join(gate["reasons"]))
+            return {
+                "schema": SCHEMA,
+                "ok": False,
+                "blocked": True,
+                "text": "BLOCKED — " + " ".join(gate["reasons"]),
+                "gate": gate,
+                **minted,
+                "lambda": LAMBDA,
+                "joules": ENERGY,
+            }
+        hit = kawsay_sense(cue, k=k)
+        sealed: list[dict[str, Any]] = []
+        for row in hit.get("handles") or []:
+            label = str(row.get("label") or row.get("nodeId") or "").strip()
+            node = str(row.get("nodeId") or "")
+            if not label:
+                continue
+            text = f"{node} · {label}"
+            r = self.yuyay.imprint(text, source="yachay", honesty=Honesty.SOFTWARE, digest=node)
+            if r.get("ok"):
+                eid = str(len(self.yuyay.texts))
+                self.graph.add_engram(eid, text, "yachay", Honesty.SOFTWARE, self.prev_hash)
+                sealed.append({"nodeId": node, "text": text[:120]})
+        minted = self._mint(
+            "graft",
+            "ALLOW",
+            Honesty.SOFTWARE.value,
+            {"cue": cue, "sealed": len(sealed)},
+            "Yachay handles imprinted as SOFTWARE engrams.",
+        )
+        return {
+            "schema": SCHEMA,
+            "ok": True,
+            "blocked": False,
+            "sealed": sealed,
+            "sense": hit,
+            "stats": self.yuyay.stats(),
+            **minted,
+            "lambda": LAMBDA,
+            "joules": ENERGY,
+        }
+
+    def beat(self, cue: str = "", seat: str = "Maskaq") -> dict[str, Any]:
+        """Living pulse. Five organs fire. Presence and AGI stay CONJECTURE."""
+        self.pulses += 1
+        sensed = kawsay_sense(cue) if cue else {"handles": [], "ready": False, "honesty": Honesty.UNAVAILABLE.value}
+        ran = kawsay_beat(
+            self.yuyay,
+            self.lock,
+            cue=cue,
+            seat=seat,
+            handles=sensed.get("handles") or [],
+            prev_hash=self.prev_hash,
+            pulse=self.pulses,
+        )
+        minted = self._mint(
+            "beat",
+            "ALLOW",
+            Honesty.MEASURED.value,
+            {"cue": cue, "seat": seat, "pulse": self.pulses},
+            "Kawsay pulse. Five organs. Presence CONJECTURE.",
+        )
+        self.prev_hash = ran.get("hash") or self.prev_hash
+        return {
+            **ran,
+            "sense": {
+                "ready": sensed.get("ready"),
+                "handles": sensed.get("handles") or [],
+                "honesty": sensed.get("honesty"),
+                "kind": sensed.get("kind") or "SOFTWARE",
+            },
+            "stats": self.yuyay.stats(),
+            **minted,
         }
 
 

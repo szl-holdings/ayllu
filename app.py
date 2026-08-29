@@ -220,7 +220,10 @@ def manifest() -> dict[str, Any]:
             "recall": "/api/v1/psyche/recall",
             "replay": "/api/v1/psyche/replay",
             "compose": "/api/v1/psyche/compose",
-            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Joules null.",
+            "beat": "/api/v1/psyche/beat",
+            "sense": "/api/v1/psyche/sense",
+            "graft": "/api/v1/psyche/graft",
+            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Pulse MEASURED. Presence CONJECTURE. Joules null.",
         },
         "product_origin": "https://a-11-oy.com",
         "proof_origin": "https://a11oy.net",
@@ -464,6 +467,58 @@ async def psyche_compose(request: Request) -> JSONResponse:
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
     return JSONResponse(PSYCHE.compose_turn(cue, seat=seat, imprint=imprint))
+
+
+@app.post("/api/v1/psyche/sense")
+async def psyche_sense(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
+        k = int(body.get("k") or 6)
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.sense(cue, k=k))
+
+
+@app.post("/api/v1/psyche/graft")
+async def psyche_graft(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
+        k = int(body.get("k") or 6)
+        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
+            PSYCHE.set_lock(True)
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.graft(cue, k=k))
+
+
+@app.post("/api/v1/psyche/beat")
+async def psyche_beat(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
+        seat = str(body.get("seat") or body.get("persona") or "Maskaq")
+        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
+            PSYCHE.set_lock(True)
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.beat(cue, seat=seat))
 
 
 @app.post("/api/v1/ayllu/ask")
