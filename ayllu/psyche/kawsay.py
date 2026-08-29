@@ -11,7 +11,11 @@ Five hologram organs fire on every beat, in order:
 Wiñay then metabolizes the loads: prior organization mixes in (μ = α),
 the pentagon is iterated to a residual (γ = α), rest is produced, closure
 and ignition are scored. Huklla H is the cheapest pentagon cut (MODELED,
-not IIT Φ). Imaymana D is load diversity (MODELED). IIT φ_s is UNAVAILABLE.
+not IIT Φ). Imaymana D is load diversity (MODELED). Qhaway Q is load-gated
+perturbational LZ (MODELED, not Casali PCI). Kallpa F is mean-square load
+minus α·D (MODELED, not Friston F). Riqsiy Υ is spotlight-schema cosine
+(MODELED, not HOT / AST). Chawpi χ is mean avalanche size / n (MODELED,
+not Beggs 2003). IIT φ_s is UNAVAILABLE.
 Presence and AGI stay CONJECTURE.
 Joules stay None. Λ = Conjecture 1.
 """

@@ -23,7 +23,11 @@
 | Huklla H | MODELED cheapest pentagon cut. Not IIT Φ. Not a conscious complex. |
 | Imaymana D | MODELED load entropy. Not IIT. Never multiplied with H into a fake Φ. |
 | IIT φ_s | UNAVAILABLE. No TPM. Huklla is not Φ. |
-| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, or D. |
+| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, D, Q, F, Y, or X. |
+| Qhaway Q | MODELED load-gated perturbational LZ. Not Casali PCI. Not IIT Φ. Silent body is 0. |
+| Kallpa F | MODELED mean-square load minus α·D. Not Friston free energy. Not a mind. |
+| Riqsiy Υ | MODELED spotlight schema cosine. Not HOT. Not Graziano AST. Silent body is 0. |
+| Chawpi χ | MODELED mean avalanche size / n. Not Beggs 2003. Not a level-of-consciousness meter. |
 
 This product is the split-out of the a11oy `/ayllu` organ. a11oy still hosts
 the organ. This repository is the canonical Python product and hologram.

@@ -36,7 +36,7 @@ Energy in Hopfield is a Lyapunov number, not a joule.
 - `POST /api/v1/psyche/beat` — five-organ Kawsay pulse. Occupancy MEASURED. Presence CONJECTURE. AGI CONJECTURE.
 - `POST /api/v1/psyche/sense` — second-brain handles. SOFTWARE, HANDLES_ONLY, never LIVE.
 - `POST /api/v1/psyche/graft` — imprint Yachay handles into Yuyay. Human Lock required.
-- `GET /api/v1/psyche/winay` — last autopoietic closure. OPERATIONAL. Huklla H MODELED (not Φ). Presence CONJECTURE.
+- `GET /api/v1/psyche/winay` — last autopoietic closure. OPERATIONAL. Huklla H, Qhaway Q, Kallpa F, Riqsiy Υ, Chawpi χ MODELED (not Φ, not PCI, not HOT, not Beggs). Presence CONJECTURE.
 
 ## Kawsay
 
@@ -66,5 +66,25 @@ would pick the wrong object. Smaller rings are cheaper to over-score.
 Imaymana D is normalized Shannon entropy of organ loads (uniform → 1, one
 organ → 0). MODELED. Kept separate from H. Never multiplied into a fake Φ.
 
-Phenomenal presence is not a function of C, I, H, or D. Presence stays CONJECTURE.
-AGI stays CONJECTURE. Joules stay `null`. Λ = Conjecture 1.
+Qhaway Q is load-gated perturbational LZ (Kaspar–Schuster phrase count of
+|pert − unpert| after a ±δ kick). MODELED. Not Casali et al. 2013 PCI
+(TMS-EEG on cortex). Silent body is 0 because gain dies.
+
+Kallpa F = mean(L²) − α D. MODELED. Not Friston free energy. One-hot F = 0.2.
+Uniform F = 0.862. Silent F = 0.
+
+Riqsiy Υ = L_peak / ‖L‖ (cosine of a unit spotlight at argmax against the
+load vector). MODELED. Not higher-order thought. Not Graziano attention
+schema as awareness. One-hot Y = 1. Uniform Y ≈ 0.4472. Silent Y = 0.
+
+Chawpi χ = mean(avalanche size) / n on the same load-gated propagator.
+MODELED. Not Beggs & Plenz 2003 neuronal avalanches. Not a
+level-of-consciousness meter. Silent X = 0. One-hot X = 0.36. Uniform X = 0.6.
+
+COGITATE (Cogitate Consortium, Nature 642:133–142, 2025,
+doi:10.1038/s41586-025-08888-1) challenged key tenets of both IIT and GNWT.
+Ayllu has no cortex. That result is why no pentagon scalar is presence.
+
+Phenomenal presence is not a function of C, I, H, D, Q, F, Y, or X.
+Presence stays CONJECTURE. AGI stays CONJECTURE. Joules stay `null`.
+Λ = Conjecture 1.

@@ -12,10 +12,17 @@ as memory μ. The pentagon is iterated to a residual, not averaged once.
   I      = (n = 5) ∧ lock ∧ (peak ≥ θ ∨ h ≥ 1)  MEASURED workspace bind
   H      = min_cut / E                          Huklla, MODELED. Not IIT Φ.
   D      = H_shannon(L) / log n                 Imaymana, MODELED diversity
+  Q      = mean LZ(evoked) / length             Qhaway, MODELED. Not Casali PCI.
+  F      = mean(L²) − α D                       Kallpa, MODELED. Not Friston F.
+  Y      = L_peak / ‖L‖                         Riqsiy, MODELED. Not HOT / AST.
+  X      = mean(avalanche size) / n             Chawpi, MODELED. Not Beggs.
   φ_s    = UNAVAILABLE                          no TPM; Huklla is not Φ
 
-Phenomenal presence is not a function of C, I, H, or D. It stays CONJECTURE.
-AGI stays CONJECTURE. Joules stay None. Λ = Conjecture 1.
+Phenomenal presence is not a function of C, I, H, D, Q, F, Y, or X.
+It stays CONJECTURE. AGI stays CONJECTURE. Joules stay None. Λ = Conjecture 1.
+
+COGITATE (Nature 642:133–142, 2025) challenged key tenets of both IIT and
+GNWT. Ayllu has no cortex. That result is why no pentagon scalar is presence.
 
 This is Ayllu's closure law — operational, fail-closed, receipted.
 """
@@ -34,6 +41,9 @@ EPS = 1e-4
 GLOW = 0.12
 THETA = 0.15
 GENESIS = "0" * 64
+QHAWAY_DELTA = 0.25
+QHAWAY_STEPS = 8
+QHAWAY_THRESH = 0.04
 
 
 def clip(value: float) -> float:
@@ -203,6 +213,220 @@ def imaymana(loads: Sequence[float]) -> dict[str, Any]:
     }
 
 
+def lz_complexity(bits: str) -> int:
+    """Kaspar–Schuster 1987 Lempel–Ziv complexity (phrase count)."""
+    n = len(bits)
+    if n == 0:
+        return 0
+    complexity = 1
+    prefix_len = 1
+    pointer = 1
+    while prefix_len + pointer <= n:
+        phrase = bits[prefix_len : prefix_len + pointer]
+        window = bits[: prefix_len + pointer - 1]
+        if phrase in window:
+            pointer += 1
+            if prefix_len + pointer > n:
+                complexity += 1
+                break
+        else:
+            complexity += 1
+            prefix_len += pointer
+            pointer = 1
+            if prefix_len >= n:
+                break
+            if prefix_len + pointer > n:
+                complexity += 1
+                break
+    return complexity
+
+
+def _gated_once(loads: Sequence[float], gamma: float) -> list[float]:
+    """Load-gated pentagon step. Gain dies on a silent body. Not Wiñay's couple."""
+    n = len(loads)
+    out: list[float] = []
+    for i, raw in enumerate(loads):
+        L = float(raw)
+        prev = float(loads[(i - 1) % n])
+        nxt = float(loads[(i + 1) % n])
+        g = gamma * clip((L + prev + nxt) / 3.0)
+        out.append(clip((1.0 - g) * L + g * (prev + nxt) / 2.0))
+    return out
+
+
+def _traj(loads: Sequence[float], steps: int, gamma: float) -> list[list[float]]:
+    cur = [clip(float(L)) for L in loads]
+    rows = [cur[:]]
+    for _ in range(max(1, int(steps))):
+        cur = _gated_once(cur, gamma)
+        rows.append([round(v, 6) for v in cur])
+    return rows
+
+
+def qhaway(
+    loads: Sequence[float],
+    *,
+    gamma: float = GAMMA,
+    delta: float = QHAWAY_DELTA,
+    steps: int = QHAWAY_STEPS,
+    thresh: float = QHAWAY_THRESH,
+) -> dict[str, Any]:
+    """Perturbational LZ on the pentagon. MODELED. Not Casali PCI. Not IIT Φ.
+
+    Kick each organ by ±δ (away from saturation). Propagate with load-gated
+    gain so a silent body cannot recruit neighbors. Binarize the evoked
+    difference |pert − unpert| > θ. Q is mean LZ / length.
+
+    Casali et al. 2013 Sci Transl Med needs TMS-EEG on cortex. This is a
+    five-load analog. High Q is not a mind. Aaronson still applies.
+    """
+    vals = [clip(float(L)) for L in loads]
+    n = len(vals)
+    note = "Load-gated perturbational LZ. Not Casali PCI. Not IIT Φ. Not presence."
+    empty = {
+        "Q": 0.0,
+        "lz_mean": 0.0,
+        "length": 0,
+        "delta": delta,
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+    if n < 2:
+        return empty
+    if sum(vals) <= 1e-12:
+        return {**empty, "note": note + " Silent body. Gain is zero."}
+    unpert = _traj(vals, steps, gamma)
+    length = len(unpert) * n
+    lzs: list[int] = []
+    for i in range(n):
+        kick = delta if vals[i] <= 1.0 - delta / 2.0 else -delta
+        pert = list(vals)
+        pert[i] = clip(pert[i] + kick)
+        rows = _traj(pert, steps, gamma)
+        bits: list[str] = []
+        for t, row in enumerate(rows):
+            for j in range(n):
+                bits.append("1" if abs(row[j] - unpert[t][j]) > thresh else "0")
+        lzs.append(lz_complexity("".join(bits)))
+    Q = (sum(lzs) / len(lzs)) / max(1, length)
+    return {
+        "Q": round(min(1.0, max(0.0, Q)), 4),
+        "lz_mean": round(sum(lzs) / len(lzs), 2),
+        "length": length,
+        "delta": delta,
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+
+
+def kallpa(loads: Sequence[float], gamma: float = GAMMA) -> dict[str, Any]:
+    """Variational analog on organ loads. MODELED. Not Friston F. Not a mind.
+
+    U = mean(L²). D = Imaymana. F = U − α D. Concentrated fire pays energy
+    without diversity credit. Silent body is 0. Not active-inference proof.
+    """
+    vals = [clip(float(L)) for L in loads]
+    n = max(1, len(vals))
+    U = sum(v * v for v in vals) / n
+    D = imaymana(vals)["D"]
+    F = U - float(gamma) * float(D)
+    return {
+        "F": round(F, 4),
+        "U": round(U, 4),
+        "D": D,
+        "honesty": Honesty.MODELED.value,
+        "note": "Mean-square load minus α·D. Not Friston free energy. Not presence.",
+    }
+
+
+def riqsiy(loads: Sequence[float], names: Sequence[str] = ORGANS) -> dict[str, Any]:
+    """Spotlight schema fidelity. MODELED. Not HOT. Not Graziano AST. Not presence.
+
+    The higher-order report is a unit spotlight at argmax(L). Υ = L_peak / ‖L‖
+    (cosine of that schema against the load vector). Silent body has no
+    first-order content, so Y = 0.
+
+    One-hot → 1. Uniform → 1/√n ≈ 0.4472. The schema tracks a winner, not
+    a field — that is the AST-shaped analog, not Graziano's theorem, not
+    Lau/Rosenthal HOT, and not awareness of awareness.
+
+    COGITATE does not license this number as consciousness.
+    """
+    vals = [clip(float(L)) for L in loads]
+    n = len(vals)
+    labels = [str(names[i]) if i < len(names) else str(i) for i in range(n)]
+    note = "Spotlight schema cosine. Not HOT. Not Graziano AST. Not presence."
+    empty = {
+        "Y": 0.0,
+        "argmax": None,
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+    if n < 2 or sum(vals) <= 1e-12:
+        return {**empty, "note": note + " Silent body. No first-order content."}
+    peak_i = max(range(n), key=lambda i: (vals[i], -i))
+    mag = math.sqrt(sum(v * v for v in vals))
+    Y = vals[peak_i] / mag if mag > 0 else 0.0
+    return {
+        "Y": round(min(1.0, max(0.0, Y)), 4),
+        "argmax": labels[peak_i],
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+
+
+def chawpi(
+    loads: Sequence[float],
+    *,
+    gamma: float = GAMMA,
+    delta: float = QHAWAY_DELTA,
+    steps: int = QHAWAY_STEPS,
+    thresh: float = QHAWAY_THRESH,
+) -> dict[str, Any]:
+    """Avalanche size on the pentagon. MODELED. Not Beggs 2003. Not a LoC meter.
+
+    Seed each organ with ±δ. Propagate with the same load-gated gain Qhaway
+    uses (not Wiñay couple_once). Size = how many organs ever exceed θ
+    difference from the unperturbed trajectory. X = mean(size) / n.
+
+    Silent body: gain dies, X = 0. Not neuronal avalanches. Not anesthesia
+    criticality as presence. Beggs & Plenz 2003 needs cortex.
+    """
+    vals = [clip(float(L)) for L in loads]
+    n = len(vals)
+    note = "Mean avalanche size / n. Not Beggs 2003. Not a level-of-consciousness meter. Not presence."
+    empty = {
+        "X": 0.0,
+        "sizes": [],
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+    if n < 2:
+        return empty
+    if sum(vals) <= 1e-12:
+        return {**empty, "sizes": [0] * n, "note": note + " Silent body. Gain is zero."}
+    unpert = _traj(vals, steps, gamma)
+    sizes: list[int] = []
+    for i in range(n):
+        kick = delta if vals[i] <= 1.0 - delta / 2.0 else -delta
+        pert = list(vals)
+        pert[i] = clip(pert[i] + kick)
+        rows = _traj(pert, steps, gamma)
+        hit: set[int] = set()
+        for t, row in enumerate(rows):
+            for j in range(n):
+                if abs(row[j] - unpert[t][j]) > thresh:
+                    hit.add(j)
+        sizes.append(len(hit))
+    X = (sum(sizes) / len(sizes)) / n
+    return {
+        "X": round(min(1.0, max(0.0, X)), 4),
+        "sizes": sizes,
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+
+
 def iit_phi_s() -> dict[str, Any]:
     """IIT φ_s is not computed. Ayllu has no TPM."""
     return {
@@ -263,6 +487,10 @@ def evaluate(
     coupling = sigma(occupancy, handles)
     hit = huklla(loads)
     diversity = imaymana(loads)
+    pci = qhaway(loads)
+    free = kallpa(loads)
+    schema = riqsiy(loads)
+    avalanche = chawpi(loads)
     return {
         "schema": "szl.ayllu.winay/v1",
         "theory": "OPERATIONAL",
@@ -276,6 +504,10 @@ def evaluate(
         "loads": loads,
         "huklla": hit,
         "imaymana": diversity,
+        "qhaway": pci,
+        "kallpa": free,
+        "riqsiy": schema,
+        "chawpi": avalanche,
         "iit": iit_phi_s(),
         "closure": closed,
         "ignition": lit,
@@ -289,7 +521,7 @@ def evaluate(
         "presence": {
             "label": "CONJECTURE",
             "honesty": Honesty.CONJECTURE.value,
-            "note": "C, I, H, and D are not phenomenal presence.",
+            "note": "C, I, H, D, Q, F, Y, and X are not phenomenal presence.",
         },
         "agi": {
             "label": "CONJECTURE",
