@@ -325,3 +325,67 @@ def test_winay_prior_changes_next_beat() -> None:
     assert lit["presence"]["label"] == "CONJECTURE"
     w = p.winay()
     assert w["presence"]["honesty"] == "CONJECTURE" or w.get("presence") == "CONJECTURE"
+
+
+def test_huklla_uniform_is_point_four_silent_organ_is_free() -> None:
+    from ayllu.psyche.winay import huklla, imaymana, iit_phi_s, sigma
+
+    uniform = huklla([1.0, 1.0, 1.0, 1.0, 1.0])
+    assert uniform["H"] == 0.4
+    assert uniform["honesty"] == "MODELED"
+    assert uniform["reducible"] is False
+    assert uniform["unique"] is False
+    assert "Φ" in uniform["note"] or "Phi" in uniform["note"] or "not IIT" in uniform["note"].lower() or "Not IIT" in uniform["note"]
+    silent = huklla([1.0, 1.0, 1.0, 1.0, 0.0])
+    assert silent["H"] == 0.0
+    assert silent["reducible"] is True
+    assert silent["honesty"] == "MODELED"
+    div_u = imaymana([1.0, 1.0, 1.0, 1.0, 1.0])
+    assert div_u["D"] == 1.0
+    assert div_u["honesty"] == "MODELED"
+    div_one = imaymana([1.0, 0.0, 0.0, 0.0, 0.0])
+    assert div_one["D"] == 0.0
+    stub = iit_phi_s()
+    assert stub["phi_s"] is None
+    assert stub["honesty"] == "UNAVAILABLE"
+    assert sigma(5, 3) == round((5 / 5) * (3 / 6.0), 4)
+
+
+def test_winay_huklla_does_not_upgrade_presence() -> None:
+    from ayllu.psyche.winay import evaluate
+
+    organs = [
+        {"id": name, "decision": "ALLOW", "load": 1.0}
+        for name in ("Puriq", "Yuyay", "Tinku", "Khipu", "Lloqsi")
+    ]
+    ran = evaluate(
+        organs,
+        prev_hash="0" * 64,
+        new_hash="c" * 64,
+        lock=True,
+        peak=0.9,
+        handles=4,
+        steps=3,
+        residual=0.0,
+    )
+    assert ran["huklla"]["H"] == 0.4
+    assert ran["huklla"]["honesty"] == "MODELED"
+    assert ran["imaymana"]["D"] == 1.0
+    assert ran["imaymana"]["honesty"] == "MODELED"
+    assert ran["iit"]["phi_s"] is None
+    assert ran["iit"]["honesty"] == "UNAVAILABLE"
+    assert ran["presence"]["honesty"] == "CONJECTURE"
+    assert ran["agi"]["honesty"] == "CONJECTURE"
+    assert ran["sigma"] == round((5 / 5) * (4 / 7.0), 4)
+    assert "Φ" not in str(ran["presence"])
+    p = Psyche()
+    p.set_lock(True)
+    beat = p.beat("doctrine lock", seat="Maskaq")
+    assert beat["winay"]["huklla"]["honesty"] == "MODELED"
+    assert beat["winay"]["iit"]["phi_s"] is None
+    assert beat["presence"]["label"] == "CONJECTURE"
+    health = TestClient(app).get("/api/v1/psyche/health")
+    body = health.json()
+    assert body["huklla"] == "MODELED"
+    assert body["iit_phi_s"] == "UNAVAILABLE"
+    assert body["presence"] == "CONJECTURE"

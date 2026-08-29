@@ -224,7 +224,7 @@ def manifest() -> dict[str, Any]:
             "sense": "/api/v1/psyche/sense",
             "graft": "/api/v1/psyche/graft",
             "winay": "/api/v1/psyche/winay",
-            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Wiñay OPERATIONAL. Pulse MEASURED. Presence CONJECTURE. Joules null.",
+            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Wiñay OPERATIONAL. Huklla MODELED, not Φ. Pulse MEASURED. Presence CONJECTURE. Joules null.",
         },
         "product_origin": "https://a-11-oy.com",
         "proof_origin": "https://a11oy.net",
