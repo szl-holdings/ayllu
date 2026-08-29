@@ -121,7 +121,10 @@ async def run_turn(
             honesty = (f"model backend raised: {str(exc)[:120]} "
                        "(honest — no fabricated answer)")
 
-    if str(getattr(persona, "name", "")).lower() == "maskaq":
+    if (
+        str(getattr(persona, "name", "")).lower() == "maskaq"
+        and not isinstance(grounding, dict)
+    ):
         try:
             from ayllu.second_brain import navigator_context
             grounding = navigator_context(prompt, k=6)

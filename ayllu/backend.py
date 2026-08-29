@@ -16,11 +16,14 @@ product split-out.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import urllib.error
 import urllib.request
 from typing import Any, Optional
+
+from ayllu.second_brain import is_maskaq, navigator_context
 
 DEFAULT_OPENAI = os.environ.get("AYLLU_OPENAI_BASE", "http://127.0.0.1:8098/v1").rstrip("/")
 DEFAULT_OLLAMA = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
@@ -200,6 +203,102 @@ def software_complete(system: str, prompt: str, *, persona: Optional[str] = None
     }
 
 
+def _maskaq_prompt(prompt: str, grounding: dict[str, Any]) -> str:
+    handles = grounding.get("handles") or []
+    return (
+        (prompt or "")
+        + "\n\nCANDIDATE_HANDLES_JSON (controller-provided; HANDLES_ONLY; no node content):\n"
+        + json.dumps(handles, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        + "\nCite only offered nodeId values. If none support the query, ABSTAIN "
+          "with zero citations. Retrieval rank is SOFTWARE lexical overlap, never LIVE."
+    )
+
+
+def _abstain_maskaq(
+    grounding: dict[str, Any],
+    *,
+    persona: Optional[str],
+    bounded_tokens: int,
+    bounded_timeout: float,
+    tier: Optional[str],
+    status: dict[str, Any],
+) -> dict[str, Any]:
+    reason = grounding.get("honesty") or (
+        "no Brain evidence cleared the retrieval gate; abstaining"
+    )
+    text = (
+        f"[SOFTWARE] {persona or 'Maskaq'} ABSTAINS.\n"
+        "No grounded handles for this query. I will not invent a nodeId, "
+        "LIVE retrieval, or a citation I was not offered.\n"
+        f"{reason}"
+    )
+    return {
+        "text": text,
+        "model": "ayllu-software",
+        "stub": True,
+        "timeout": False,
+        "kind": "SOFTWARE",
+        "token_budget": bounded_tokens,
+        "timeout_s": bounded_timeout,
+        "tier_advisory": tier,
+        "backend_status": status,
+        "grounding": grounding,
+        "honesty": (
+            f"{reason} Retrieval is SOFTWARE lexical rank — never LIVE."
+        ),
+    }
+
+
+def _validate_citations(answer: Any, grounding: dict[str, Any]) -> str | None:
+    """Refuse unknown nodeIds. Fail closed. None means the output may stand."""
+    if not isinstance(answer, str):
+        return None
+    candidate = answer.strip()
+    if candidate.startswith("```") and candidate.endswith("```"):
+        candidate = candidate[3:-3].strip()
+        if candidate.lower().startswith("json"):
+            candidate = candidate[4:].lstrip()
+    try:
+        parsed = json.loads(candidate)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    declared = parsed.get("citedNodeIds")
+    if declared is None:
+        declared = parsed.get("cited_node_ids")
+    if declared is None:
+        return None
+    if not isinstance(declared, list) or any(
+        not isinstance(item, str) or not item for item in declared
+    ):
+        grounding["citation_validation"] = {
+            "state": "INVALID_CITATION_CONTRACT",
+            "cited_node_ids": [],
+        }
+        return "cited node IDs must be a list of non-empty strings"
+    cited = list(dict.fromkeys(declared))
+    offered = {
+        row.get("nodeId")
+        for row in grounding.get("handles") or []
+        if isinstance(row, dict) and isinstance(row.get("nodeId"), str)
+    }
+    unknown = sorted(set(cited) - offered)
+    grounding["citation_validation"] = {
+        "state": (
+            "UNKNOWN_CITATION_REFUSED" if unknown
+            else "CITATIONS_WITHIN_OFFERED_HANDLES"
+        ),
+        "cited_node_ids": cited,
+        "cited_node_ids_sha256": hashlib.sha256(
+            json.dumps(cited, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        ).hexdigest(),
+    }
+    if unknown:
+        return "model cited node IDs outside the controller-offered handle set"
+    return None
+
+
 async def model_complete(
     system: str,
     prompt: str,
@@ -215,17 +314,42 @@ async def model_complete(
     status = backend_status()
     bounded_tokens = max(1, min(int(max_tokens), 2048))
     bounded_timeout = max(0.1, min(float(timeout_s), 120.0))
+    user_prompt = prompt or ""
+    grounding: dict[str, Any] | None = None
+    if is_maskaq(persona):
+        grounding = navigator_context(user_prompt, k=6)
+        grounding["kind"] = "SOFTWARE"
+        if not grounding.get("ready"):
+            grounding["state"] = grounding.get("state") or "ABSTAIN_NO_GROUNDED_HANDLES"
+            return _abstain_maskaq(
+                grounding,
+                persona=persona,
+                bounded_tokens=bounded_tokens,
+                bounded_timeout=bounded_timeout,
+                tier=tier,
+                status=status,
+            )
+        user_prompt = _maskaq_prompt(user_prompt, grounding)
+        grounding["augmented_prompt_sha256"] = hashlib.sha256(
+            user_prompt.encode("utf-8")
+        ).hexdigest()
     messages = [
         {"role": "system", "content": system or ""},
-        {"role": "user", "content": prompt or ""},
+        {"role": "user", "content": user_prompt},
     ]
 
     if status["mode"] != "live":
-        out = software_complete(system, prompt, persona=persona)
+        out = software_complete(system, user_prompt, persona=persona)
         out["token_budget"] = bounded_tokens
         out["timeout_s"] = bounded_timeout
         out["tier_advisory"] = tier
         out["backend_status"] = status
+        if grounding is not None:
+            out["grounding"] = grounding
+            out["honesty"] = (
+                "SOFTWARE advisory with controller handles (HANDLES_ONLY). "
+                "Retrieval is lexical overlap, never LIVE, never correctness."
+            )
         return out
 
     chosen = status["chosen"] or {}
@@ -258,7 +382,7 @@ async def model_complete(
         bearer=bearer,
     )
     if code != 200 or not isinstance(body, dict):
-        out = software_complete(system, prompt, persona=persona)
+        out = software_complete(system, user_prompt, persona=persona)
         out["token_budget"] = bounded_tokens
         out["timeout_s"] = bounded_timeout
         out["honesty"] = (
@@ -266,20 +390,52 @@ async def model_complete(
             "no LIVE answer fabricated."
         )
         out["upstream"] = {"http": code, "body": str(body)[:240]}
+        if grounding is not None:
+            out["grounding"] = grounding
         return out
 
     try:
         text = body["choices"][0]["message"]["content"]
     except Exception:
-        out = software_complete(system, prompt, persona=persona)
+        out = software_complete(system, user_prompt, persona=persona)
         out["honesty"] = (
             "SOFTWARE fallback — upstream JSON missing choices[0].message.content; "
             "no LIVE answer fabricated."
         )
+        if grounding is not None:
+            out["grounding"] = grounding
         return out
 
+    if grounding is not None:
+        citation_error = _validate_citations(text, grounding)
+        if citation_error:
+            rejected = hashlib.sha256(text.encode("utf-8")).hexdigest()
+            grounding["rejected_model_output_sha256"] = rejected
+            grounding["citation_validation"]["honesty"] = citation_error
+            return {
+                "text": None,
+                "model": body.get("model") or model,
+                "stub": True,
+                "timeout": False,
+                "kind": "SOFTWARE",
+                "token_budget": bounded_tokens,
+                "timeout_s": bounded_timeout,
+                "honesty": citation_error + "; no ungrounded model text returned",
+                "raw_model_output_sha256": rejected,
+                "grounding": grounding,
+            }
+
     used = (body.get("model") or model)
-    return {
+    honesty = (
+        "LIVE via reachable OpenAI-compatible backend. Unverified model text — "
+        "not MEASURED truth, not a theorem."
+    )
+    if grounding is not None:
+        honesty += (
+            " Retrieval attached as SOFTWARE handles (HANDLES_ONLY); "
+            "not LIVE retrieval, not correctness."
+        )
+    out = {
         "text": text,
         "model": used,
         "stub": False,
@@ -287,9 +443,9 @@ async def model_complete(
         "kind": "LIVE",
         "token_budget": bounded_tokens,
         "timeout_s": bounded_timeout,
-        "honesty": (
-            "LIVE via reachable OpenAI-compatible backend. Unverified model text — "
-            "not MEASURED truth, not a theorem."
-        ),
+        "honesty": honesty,
         "usage": body.get("usage"),
     }
+    if grounding is not None:
+        out["grounding"] = grounding
+    return out
