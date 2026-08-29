@@ -201,3 +201,58 @@ def test_psyche_api_operational() -> None:
     graph = c.get("/api/v1/psyche/graph")
     assert graph.status_code == 200
     assert graph.json()["counts"]["engrams"] >= 1
+
+
+def test_kawsay_beat_presence_stays_conjecture() -> None:
+    p = Psyche()
+    ran = p.beat("khipu knot", seat="Maskaq")
+    assert ran["schema"] == "szl.ayllu.kawsay-beat/v1"
+    assert [o["id"] for o in ran["organs"]] == ["Puriq", "Yuyay", "Tinku", "Khipu", "Lloqsi"]
+    assert ran["workspace"]["occupancy"] == 5
+    assert ran["workspace"]["of"] == 5
+    assert ran["presence"]["honesty"] == "CONJECTURE"
+    assert ran["agi"]["honesty"] == "CONJECTURE"
+    assert ran["presence"]["label"] == "CONJECTURE"
+    assert ran["agi"]["label"] == "CONJECTURE"
+    assert ran["joules"] is None
+    assert ran["lambda"] == LAMBDA
+    assert ran["neural"] == "OPERATIONAL"
+    assert ran["sync"]["honesty"] == "MODELED"
+    assert 0.0 <= ran["sync"]["R"] <= 1.0
+    assert ran["sync"]["gamma"] == 0.138
+    assert len(ran["hash"]) == 64
+
+
+def test_kawsay_graft_fail_closed() -> None:
+    p = Psyche()
+    blocked = p.graft("doctrine lock")
+    assert blocked["blocked"] is True
+    p.set_lock(True)
+    ok = p.graft("Lambda uniqueness conjecture")
+    assert ok["blocked"] is False
+    assert ok["ok"] is True
+    assert isinstance(ok["sealed"], list)
+
+
+def test_kawsay_api_beat_and_sense() -> None:
+    c = TestClient(app)
+    beat = c.post("/api/v1/psyche/beat", json={"cue": "doctrine lock", "seat": "Yupaq"})
+    assert beat.status_code == 200
+    body = beat.json()
+    assert body["presence"]["label"] == "CONJECTURE"
+    assert body["agi"]["label"] == "CONJECTURE"
+    assert body["workspace"]["occupancy"] == 5
+    assert body["joules"] is None
+    sense = c.post("/api/v1/psyche/sense", json={"cue": "doctrine lock", "k": 4})
+    assert sense.status_code == 200
+    sensed = sense.json()
+    assert sensed["kind"] == "SOFTWARE"
+    assert sensed["content_access"] == "HANDLES_ONLY"
+    c.post("/api/v1/psyche/lock", json={"engaged": False})
+    graft = c.post("/api/v1/psyche/graft", json={"cue": "doctrine lock", "human_lock": False})
+    assert graft.status_code == 200
+    assert graft.json()["blocked"] is True
+    health = c.get("/api/v1/psyche/health")
+    assert health.json()["presence"] == "CONJECTURE"
+    assert health.json()["agi"] == "CONJECTURE"
+    assert health.json()["pulses"] >= 1

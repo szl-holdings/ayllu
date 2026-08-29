@@ -72,7 +72,9 @@ canvas#graph{width:100%;height:280px;display:block;background:#071018;border-rad
     <div class="kpi"><b id="k-stored">0</b><span>engrams MEASURED</span></div>
     <div class="kpi"><b id="k-fid">—</b><span>retrieval fidelity</span></div>
     <div class="kpi"><b id="k-alpha">—</b><span>α load MODELED</span></div>
-    <div class="kpi"><b id="k-joules">null</b><span>joules</span></div>
+    <div class="kpi"><b id="k-occ">0/5</b><span>occupancy MEASURED</span></div>
+    <div class="kpi"><b id="k-sync">—</b><span>sync R MODELED</span></div>
+    <div class="kpi"><b id="k-joules">null</b><span>joules · presence CONJECTURE</span></div>
   </div>
   <div class="grid">
     <section class="card">
@@ -87,15 +89,19 @@ canvas#graph{width:100%;height:280px;display:block;background:#071018;border-rad
       <div class="note" id="writeout">Lock off. Writes BLOCKED.</div>
     </section>
     <section class="card">
-      <h2>Recall + Tinku</h2>
-      <textarea id="cue" placeholder="Cue the dual Hopfield. Compose through a seat."></textarea>
+      <h2>Recall + Kawsay</h2>
+      <textarea id="cue" placeholder="Cue the dual Hopfield. Pulse five organs. Graft Yachay."></textarea>
       <div class="row">
         <select id="who" aria-label="Seat"></select>
         <button type="button" id="recall">Recall</button>
         <button type="button" class="ghost" id="compose">Compose</button>
+        <button type="button" id="pulse">Pulse</button>
+        <button type="button" class="ghost" id="sense">Sense</button>
+        <button type="button" class="ghost" id="graft">Graft Yachay</button>
       </div>
       <div id="hits"></div>
       <div class="note" id="composeout"></div>
+      <div class="note" id="beatout">Occupancy MEASURED. Presence CONJECTURE. AGI CONJECTURE.</div>
     </section>
     <section class="card">
       <h2>Hypergraph</h2>
@@ -229,6 +235,32 @@ document.getElementById("compose").onclick = async () => {
   const d = r.data || {};
   const steps = ((d.pipeline||{}).steps)||[];
   document.getElementById("composeout").textContent = (d.pipeline&&d.pipeline.decision||"") + " · " + steps.map(s=>s.name+":"+s.decision).join(" → ");
+  if (d.stats) renderStats(d.stats);
+  await refresh();
+};
+document.getElementById("pulse").onclick = async () => {
+  const r = await post("beat", {cue: document.getElementById("cue").value, seat: document.getElementById("who").value, human_lock: lockOn});
+  const d = r.data || {};
+  const ws = d.workspace || {};
+  document.getElementById("k-occ").textContent = (ws.occupancy||0)+"/"+(ws.of||5);
+  document.getElementById("k-sync").textContent = d.sync && d.sync.R != null ? Number(d.sync.R).toFixed(3) : "—";
+  const organs = (d.organs||[]).map(o => o.id+":"+o.decision).join(" → ");
+  document.getElementById("beatout").textContent =
+    "pulse "+(d.pulse||0)+" · "+organs+" · presence "+((d.presence&&d.presence.label)||"CONJECTURE")+" · AGI "+((d.agi&&d.agi.label)||"CONJECTURE")+" · joules null";
+  if (ws.handles && ws.handles.length){
+    renderHits({ranked: ws.handles.map(h => ({text: h.label, source: h.nodeId, weight: 0, honesty: "SOFTWARE"}))});
+  }
+};
+document.getElementById("sense").onclick = async () => {
+  const r = await post("sense", {cue: document.getElementById("cue").value, k: 6});
+  const d = r.data || {};
+  renderHits({ranked: (d.handles||[]).map(h => ({text: h.label, source: h.nodeId, weight: 0, honesty: d.honesty}))});
+  document.getElementById("beatout").textContent = (d.honesty||"UNAVAILABLE")+" · HANDLES_ONLY · never LIVE";
+};
+document.getElementById("graft").onclick = async () => {
+  const r = await post("graft", {cue: document.getElementById("cue").value, k: 6, human_lock: lockOn});
+  const d = r.data || {};
+  document.getElementById("writeout").textContent = d.blocked ? (d.text||"BLOCKED") : ("grafted "+((d.sealed||[]).length)+" Yachay handles");
   if (d.stats) renderStats(d.stats);
   await refresh();
 };
