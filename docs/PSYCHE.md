@@ -36,10 +36,19 @@ Energy in Hopfield is a Lyapunov number, not a joule.
 - `POST /api/v1/psyche/beat` — five-organ Kawsay pulse. Occupancy MEASURED. Presence CONJECTURE. AGI CONJECTURE.
 - `POST /api/v1/psyche/sense` — second-brain handles. SOFTWARE, HANDLES_ONLY, never LIVE.
 - `POST /api/v1/psyche/graft` — imprint Yachay handles into Yuyay. Human Lock required.
+- `GET /api/v1/psyche/winay` — last autopoietic closure. OPERATIONAL. Presence CONJECTURE.
 
 ## Kawsay
 
-One beat fires Puriq → Yuyay → Tinku → Khipu → Lloqsi. Neighbor coupling uses
-γ = α ≈ 0.138 on the organ pentagon. The order parameter R is MODELED, not a
-proof of presence. Occupancy (ALLOW count / 5) is MEASURED. Phenomenal presence
-and AGI stay CONJECTURE. Joules stay `null`.
+One beat fires Puriq → Yuyay → Tinku → Khipu → Lloqsi.
+
+## Wiñay (operational closure)
+
+The five organs are a production network. Prior loads mix in with μ = α ≈ 0.138.
+The pentagon is iterated L ← (1−γ)L + γ A L until residual < ε (γ = α, A = cycle
+adjacency). Rest is produced from occupancy and R, and stays under the glow
+floor. Closure C (five ALLOW + hash chain) is MEASURED. Ignition I (workspace
+bound under lock) is MEASURED. Structural coupling σ is MODELED.
+
+Phenomenal presence is not a function of C or I. Presence stays CONJECTURE.
+AGI stays CONJECTURE. Joules stay `null`. Λ = Conjecture 1.

@@ -8,25 +8,32 @@ Five hologram organs fire on every beat, in order:
   Khipu  → chain the beat. MEASURED.
   Lloqsi → emit. SOFTWARE.
 
-Pentagon coupling reuses α ≈ 0.138 as γ. The order parameter R is MODELED.
-Presence and AGI stay CONJECTURE. The pulse count is MEASURED.
+Wiñay then metabolizes the loads: prior organization mixes in (μ = α),
+the pentagon is iterated to a residual (γ = α), rest is produced, closure
+and ignition are scored. Presence and AGI stay CONJECTURE.
 Joules stay None. Λ = Conjecture 1.
 """
 from __future__ import annotations
 
-import math
 import time
-from typing import Any
+from typing import Any, Sequence
 
 from ayllu.psyche.lock import HumanLock
 from ayllu.psyche.morphisms import ArrowContext
 from ayllu.psyche.neural import Yuyay
 from ayllu.psyche.seats import seat_morphism
 from ayllu.psyche.types import ENERGY, LAMBDA, Bundle, Honesty, Kind
+from ayllu.psyche.winay import (
+    GAMMA,
+    couple_fixed,
+    evaluate,
+    metabolize,
+    order_parameter,
+)
 from ayllu.receipts import canonical_dumps, sha3_256_hex
 
+COUPLE_GAMMA = GAMMA
 ORGANS = ("Puriq", "Yuyay", "Tinku", "Khipu", "Lloqsi")
-COUPLE_GAMMA = 0.138
 
 
 def _fire(name: str, decision: str, honesty: str, note: str, load: float) -> dict[str, Any]:
@@ -39,30 +46,9 @@ def _fire(name: str, decision: str, honesty: str, note: str, load: float) -> dic
     }
 
 
-def order_parameter(loads: list[float]) -> float:
-    """Kuramoto-style order parameter on organ loads. MODELED, not a mind."""
-    if not loads:
-        return 0.0
-    x = 0.0
-    y = 0.0
-    n = len(loads)
-    for load in loads:
-        th = 2.0 * math.pi * load
-        x += math.cos(th)
-        y += math.sin(th)
-    return round(math.hypot(x / n, y / n), 4)
-
-
 def couple(loads: list[float], gamma: float = COUPLE_GAMMA) -> list[float]:
-    n = len(loads)
-    if n < 2:
-        return [round(max(0.0, min(1.0, L)), 3) for L in loads]
-    out: list[float] = []
-    for i, L in enumerate(loads):
-        prev = loads[(i - 1) % n]
-        nxt = loads[(i + 1) % n]
-        out.append(round(max(0.0, min(1.0, (1.0 - gamma) * L + gamma * (prev + nxt) / 2.0)), 3))
-    return out
+    coupled, _, _ = couple_fixed(loads, gamma=gamma)
+    return coupled
 
 
 def sense(cue: str, k: int = 6) -> dict[str, Any]:
@@ -108,6 +94,7 @@ def beat(
     handles: list[dict[str, Any]] | None = None,
     prev_hash: str = "0" * 64,
     pulse: int = 0,
+    prior: Sequence[float] | None = None,
 ) -> dict[str, Any]:
     """One organism heartbeat. Read-only. Writes stay on imprint/graft/replay."""
     cue = (cue or "").strip()[:800]
@@ -174,6 +161,7 @@ def beat(
         "peak": peak,
         "handles": [h.get("nodeId") for h in (sensed or []) if isinstance(h, dict)],
         "lock": lock.engaged,
+        "prior": [round(float(x), 3) for x in (prior or [])],
     }
     digest = sha3_256_hex(canonical_dumps({"prev": prev_hash, "beat": body}))
     organs.append(
@@ -197,12 +185,23 @@ def beat(
         )
     )
 
-    coupled = couple([float(o["load"]) for o in organs])
+    mixed = metabolize([float(o["load"]) for o in organs], prior)
+    coupled, steps, residual = couple_fixed(mixed)
     for organ, load in zip(organs, coupled):
         organ["load"] = load
     R = order_parameter([float(o["load"]) for o in organs])
-
     occupancy = sum(1 for o in organs if o["decision"] == "ALLOW")
+    winay = evaluate(
+        organs,
+        prev_hash=prev_hash,
+        new_hash=digest,
+        lock=lock.engaged,
+        peak=peak,
+        handles=handle_n,
+        steps=steps,
+        residual=residual,
+    )
+
     traces = []
     for row in rec.get("ranked") or []:
         if not isinstance(row, dict):
@@ -234,20 +233,15 @@ def beat(
             "R": R,
             "honesty": Honesty.MODELED.value,
             "gamma": COUPLE_GAMMA,
-            "note": "Pentagon order parameter. Not presence. Not AGI.",
+            "steps": steps,
+            "residual": residual,
+            "note": "Pentagon order parameter after autopoietic iterate. Not presence. Not AGI.",
         },
+        "winay": winay,
         "hash": digest,
         "prev": prev_hash,
-        "presence": {
-            "label": "CONJECTURE",
-            "honesty": Honesty.CONJECTURE.value,
-            "note": "Workspace occupancy is MEASURED. Phenomenal presence is not.",
-        },
-        "agi": {
-            "label": "CONJECTURE",
-            "honesty": Honesty.CONJECTURE.value,
-            "note": "Eleven seats, one backend, fail-closed. Not a mind as theorem.",
-        },
+        "presence": winay["presence"],
+        "agi": winay["agi"],
         "neural": "OPERATIONAL",
         "lambda": LAMBDA,
         "joules": ENERGY,
