@@ -13,7 +13,7 @@ eleven separately trained models.
 """
 from __future__ import annotations
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 NAMESPACE_DEFAULT = "ayllu"
 PRODUCT = "Ayllu Counsel"
 SCHEMA_COUNCIL = "szl.ayllu.evidence-bound-council/v2"
