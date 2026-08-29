@@ -377,6 +377,13 @@ def test_winay_huklla_does_not_upgrade_presence() -> None:
     assert ran["presence"]["honesty"] == "CONJECTURE"
     assert ran["agi"]["honesty"] == "CONJECTURE"
     assert ran["sigma"] == round((5 / 5) * (4 / 7.0), 4)
+    assert ran["qhaway"]["honesty"] == "MODELED"
+    assert ran["kallpa"]["honesty"] == "MODELED"
+    assert ran["kallpa"]["F"] == 0.862
+    assert ran["riqsiy"]["honesty"] == "MODELED"
+    assert ran["riqsiy"]["Y"] == 0.4472
+    assert ran["chawpi"]["honesty"] == "MODELED"
+    assert ran["chawpi"]["X"] == 0.6
     assert "Φ" not in str(ran["presence"])
     p = Psyche()
     p.set_lock(True)
@@ -387,5 +394,79 @@ def test_winay_huklla_does_not_upgrade_presence() -> None:
     health = TestClient(app).get("/api/v1/psyche/health")
     body = health.json()
     assert body["huklla"] == "MODELED"
+    assert body["qhaway"] == "MODELED"
+    assert body["kallpa"] == "MODELED"
+    assert body["riqsiy"] == "MODELED"
+    assert body["chawpi"] == "MODELED"
     assert body["iit_phi_s"] == "UNAVAILABLE"
+    assert body["presence"] == "CONJECTURE"
+
+
+def test_qhaway_silent_is_zero_kallpa_is_energy_minus_diversity() -> None:
+    from ayllu.psyche.winay import kallpa, lz_complexity, qhaway
+
+    assert lz_complexity("") == 0
+    assert lz_complexity("0" * 16) == 2
+    silent = qhaway([0.0, 0.0, 0.0, 0.0, 0.0])
+    assert silent["Q"] == 0.0
+    assert silent["honesty"] == "MODELED"
+    assert "PCI" in silent["note"] or "Casali" in silent["note"]
+    uniform = qhaway([1.0, 1.0, 1.0, 1.0, 1.0])
+    mixed = qhaway([0.9, 0.2, 0.7, 0.1, 0.6])
+    assert 0.0 < uniform["Q"] <= 1.0
+    assert 0.0 < mixed["Q"] <= 1.0
+    assert uniform["honesty"] == "MODELED"
+    one = kallpa([1.0, 0.0, 0.0, 0.0, 0.0])
+    assert one["F"] == 0.2
+    assert one["D"] == 0.0
+    assert one["honesty"] == "MODELED"
+    full = kallpa([1.0, 1.0, 1.0, 1.0, 1.0])
+    assert full["F"] == 0.862
+    assert full["D"] == 1.0
+    dead = kallpa([0.0, 0.0, 0.0, 0.0, 0.0])
+    assert dead["F"] == 0.0
+    p = Psyche()
+    p.set_lock(True)
+    beat = p.beat("doctrine lock", seat="Maskaq")
+    assert beat["winay"]["qhaway"]["honesty"] == "MODELED"
+    assert beat["winay"]["kallpa"]["honesty"] == "MODELED"
+    assert beat["presence"]["label"] == "CONJECTURE"
+    assert beat["winay"]["iit"]["phi_s"] is None
+
+
+def test_riqsiy_spotlight_chawpi_silent_is_zero() -> None:
+    from ayllu.psyche.winay import chawpi, riqsiy
+
+    silent = riqsiy([0.0, 0.0, 0.0, 0.0, 0.0])
+    assert silent["Y"] == 0.0
+    assert silent["honesty"] == "MODELED"
+    assert "HOT" in silent["note"] or "AST" in silent["note"]
+    one = riqsiy([1.0, 0.0, 0.0, 0.0, 0.0])
+    assert one["Y"] == 1.0
+    assert one["argmax"] == "Puriq"
+    uni = riqsiy([1.0, 1.0, 1.0, 1.0, 1.0])
+    assert uni["Y"] == 0.4472
+    assert one["Y"] > uni["Y"] > silent["Y"]
+    mixed = riqsiy([0.9, 0.2, 0.7, 0.1, 0.6])
+    assert mixed["Y"] == 0.6882
+    dead = chawpi([0.0, 0.0, 0.0, 0.0, 0.0])
+    assert dead["X"] == 0.0
+    assert dead["honesty"] == "MODELED"
+    assert "Beggs" in dead["note"]
+    hot = chawpi([1.0, 0.0, 0.0, 0.0, 0.0])
+    full = chawpi([1.0, 1.0, 1.0, 1.0, 1.0])
+    assert hot["X"] == 0.36
+    assert full["X"] == 0.6
+    assert full["X"] > hot["X"] > dead["X"]
+    p = Psyche()
+    p.set_lock(True)
+    beat = p.beat("doctrine lock", seat="Maskaq")
+    assert beat["winay"]["riqsiy"]["honesty"] == "MODELED"
+    assert beat["winay"]["chawpi"]["honesty"] == "MODELED"
+    assert beat["presence"]["label"] == "CONJECTURE"
+    assert "Y" in beat["winay"]["presence"]["note"] or "X" in beat["winay"]["presence"]["note"]
+    health = TestClient(app).get("/api/v1/psyche/health")
+    body = health.json()
+    assert body["riqsiy"] == "MODELED"
+    assert body["chawpi"] == "MODELED"
     assert body["presence"] == "CONJECTURE"
