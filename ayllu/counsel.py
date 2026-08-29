@@ -130,7 +130,13 @@ LEADERS = [
 
 
 def pull(url: str, timeout: float = 10.0) -> dict[str, Any]:
-    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "AylluCounsel/1.3 (+https://huggingface.co/spaces/SZLHOLDINGS/ayllu)",
+        },
+    )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as res:
             return {"ok": True, "status": int(res.status), "json": json.loads(res.read().decode("utf-8"))}
