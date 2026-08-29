@@ -25,6 +25,23 @@ CONSOLIDATED = [
         "urls": [ORIGINS["github"], ORIGINS["space"]],
     },
     {
+        "name": "Legal Matter Command",
+        "kind": "counsel organ",
+        "origin": "this repository /counsel",
+        "honesty": "Live a11oy legal vertical + grok-4.5 when XAI_API_KEY is set. Human Lock fail-closed. Continuance of retired Counsel, not a deletion.",
+        "urls": [
+            "https://huggingface.co/spaces/SZLHOLDINGS/ayllu",
+            "https://a-11-oy.com/api/a11oy/v1/vert/legal",
+        ],
+    },
+    {
+        "name": "Retired Counsel artifact",
+        "kind": "superseded organ",
+        "origin": "https://github.com/szl-holdings/platform",
+        "honesty": "SUPERSEDED, retained in place. Not deleted.",
+        "urls": ["https://github.com/szl-holdings/platform"],
+    },
+    {
         "name": "a11oy organ /ayllu",
         "kind": "flagship organ",
         "origin": "https://github.com/szl-holdings/a11oy",

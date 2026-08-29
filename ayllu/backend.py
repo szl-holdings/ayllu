@@ -2,6 +2,7 @@
 
 Probe order (first reachable live path wins):
 
+0. XAI_API_KEY → https://api.x.ai/v1  (grok-4.5) — Space LIVE path
 1. AYLLU_OPENAI_BASE (default http://127.0.0.1:8098/v1) — CHASKI-R2 OpenAI-compat
 2. OLLAMA_HOST OpenAI-compat (default http://127.0.0.1:11434/v1)
 3. OPENAI_BASE_URL if explicitly set
@@ -23,11 +24,21 @@ from typing import Any, Optional
 
 DEFAULT_OPENAI = os.environ.get("AYLLU_OPENAI_BASE", "http://127.0.0.1:8098/v1").rstrip("/")
 DEFAULT_OLLAMA = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
+XAI_BASE = os.environ.get("XAI_BASE_URL", "https://api.x.ai/v1").rstrip("/")
 DEFAULT_TIMEOUT = 2.5
 
 
-def _get(url: str, timeout: float = DEFAULT_TIMEOUT) -> tuple[int, str]:
-    req = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
+def _headers(extra: dict[str, str] | None = None, bearer: str | None = None) -> dict[str, str]:
+    h = {"Accept": "application/json"}
+    if extra:
+        h.update(extra)
+    if bearer:
+        h["Authorization"] = f"Bearer {bearer}"
+    return h
+
+
+def _get(url: str, timeout: float = DEFAULT_TIMEOUT, bearer: str | None = None) -> tuple[int, str]:
+    req = urllib.request.Request(url, method="GET", headers=_headers(bearer=bearer))
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return int(resp.status), resp.read().decode("utf-8", "replace")
@@ -37,13 +48,18 @@ def _get(url: str, timeout: float = DEFAULT_TIMEOUT) -> tuple[int, str]:
         return 0, str(exc)[:160]
 
 
-def _post_json(url: str, body: dict[str, Any], timeout: float) -> tuple[int, Any]:
+def _post_json(
+    url: str,
+    body: dict[str, Any],
+    timeout: float,
+    bearer: str | None = None,
+) -> tuple[int, Any]:
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=data,
         method="POST",
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        headers=_headers({"Content-Type": "application/json"}, bearer=bearer),
     )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -73,6 +89,27 @@ def _probe_openai(base: str) -> dict[str, Any]:
     }
 
 
+def _probe_xai() -> dict[str, Any]:
+    key = (os.environ.get("XAI_API_KEY") or "").strip()
+    if not key:
+        return {
+            "base": XAI_BASE,
+            "reachable": False,
+            "http_status": 0,
+            "hint": "XAI_API_KEY absent — no LIVE grok fabricated.",
+            "model": "grok-4.5",
+        }
+    status, body = _get(f"{XAI_BASE}/models", timeout=4.0, bearer=key)
+    return {
+        "base": XAI_BASE,
+        "reachable": status == 200,
+        "http_status": status,
+        "hint": "ok" if status == 200 else body[:180],
+        "model": "grok-4.5",
+        "key_present": True,
+    }
+
+
 def backend_status() -> dict[str, Any]:
     """Side-effect-free snapshot of what this process can do NOW."""
     if os.environ.get("AYLLU_FORCE_SOFTWARE", "").strip() in ("1", "true", "yes"):
@@ -84,13 +121,16 @@ def backend_status() -> dict[str, Any]:
             "backend": "ayllu.backend.model_complete",
             "lambda": "CONJECTURE_1",
         }
+    xai = _probe_xai()
     chaski = _probe_openai(DEFAULT_OPENAI)
     ollama_openai = _probe_openai(f"{DEFAULT_OLLAMA}/v1")
     ollama_tags_status, ollama_tags_body = _get(f"{DEFAULT_OLLAMA}/api/tags")
     explicit = os.environ.get("OPENAI_BASE_URL", "").rstrip("/")
     explicit_probe = _probe_openai(explicit) if explicit else None
 
-    if chaski["reachable"]:
+    if xai["reachable"]:
+        mode, chosen = "live", {"kind": "xai-grok", **xai}
+    elif chaski["reachable"]:
         mode, chosen = "live", {"kind": "chaski-r2", **chaski}
     elif ollama_openai["reachable"] or ollama_tags_status == 200:
         mode, chosen = "live", {
@@ -107,6 +147,7 @@ def backend_status() -> dict[str, Any]:
         "mode": mode,
         "chosen": chosen,
         "probes": {
+            "xai_grok": xai,
             "chaski_r2": chaski,
             "ollama_openai": ollama_openai,
             "ollama_tags_http": ollama_tags_status,
@@ -114,8 +155,9 @@ def backend_status() -> dict[str, Any]:
         },
         "note": {
             "live": (
-                "real model answers via a reachable OpenAI-compatible endpoint. "
-                "Outputs remain unverified model text — not MEASURED truth."
+                "real model answers via a reachable OpenAI-compatible endpoint "
+                "(grok-4.5 when XAI_API_KEY is set). Outputs remain unverified "
+                "model text — not MEASURED truth."
             ),
             "software": (
                 "no reachable live backend — clearly-labeled SOFTWARE advisory "
@@ -142,8 +184,8 @@ def software_complete(system: str, prompt: str, *, persona: Optional[str] = None
         "- I will not invent a LIVE completion, a signature, a joule, or a proven Λ.\n"
         "- I stay inside my remit; questions outside it belong to another seat.\n"
         "- Honest dissent beats false consensus.\n"
-        "- If you wire CHASKI-R2 on :8098 or Ollama on :11434, this seat answers LIVE "
-        "and still remains unverified model text.\n"
+        "- If you set XAI_API_KEY (grok-4.5), or wire CHASKI-R2 on :8098 / Ollama on :11434, "
+        "this seat answers LIVE and still remains unverified model text.\n"
         "I don't know anything I have not grounded in a receipt."
     )
     return {
@@ -188,7 +230,12 @@ async def model_complete(
 
     chosen = status["chosen"] or {}
     kind = chosen.get("kind")
-    if kind == "chaski-r2":
+    bearer: str | None = None
+    if kind == "xai-grok":
+        url = f"{XAI_BASE}/chat/completions"
+        model = os.environ.get("AYLLU_MODEL", "grok-4.5")
+        bearer = (os.environ.get("XAI_API_KEY") or "").strip() or None
+    elif kind == "chaski-r2":
         url = f"{DEFAULT_OPENAI}/chat/completions"
         model = os.environ.get("AYLLU_MODEL", "chaski-r2")
     elif kind == "ollama":
@@ -208,6 +255,7 @@ async def model_complete(
             "temperature": temperature,
         },
         bounded_timeout,
+        bearer=bearer,
     )
     if code != 200 or not isinstance(body, dict):
         out = software_complete(system, prompt, persona=persona)
