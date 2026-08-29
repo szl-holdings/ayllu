@@ -18,6 +18,7 @@
 | Retired Counsel artifact | SUPERSEDED, retained. Not deleted |
 | Physical effectors | Not in this product |
 | Eleven separately trained models | False. Roles on one routed backend |
+| Second-brain index | SOFTWARE lexical rank over the public 575-chunk projection when present. Handles only. Never LIVE retrieval. Private 9464-node graph is not admitted to gradients. |
 
 This product is the split-out of the a11oy `/ayllu` organ. a11oy still hosts
 the organ. This repository is the canonical Python product and hologram.

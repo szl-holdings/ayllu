@@ -91,6 +91,20 @@ CONSOLIDATED = [
         "urls": ["https://huggingface.co/spaces/SZLHOLDINGS/anatomy"],
     },
     {
+        "name": "Second Brain",
+        "kind": "retrieval hologram",
+        "origin": "https://github.com/szl-holdings/szl-second-brain",
+        "honesty": (
+            "SOFTWARE navigator over the public 575-chunk projection. "
+            "Handles only. YACHAY organ. Never the private 9464-node graph. "
+            "Does not overwrite SZLHOLDINGS/SZL-Khipu-1.5B-BrainNavigator."
+        ),
+        "urls": [
+            "https://huggingface.co/spaces/SZLHOLDINGS/second-brain",
+            "https://github.com/szl-holdings/szl-second-brain",
+        ],
+    },
+    {
         "name": "Hatun MCP",
         "kind": "mcp gateway",
         "origin": "https://github.com/szl-holdings/hatun-mcp",

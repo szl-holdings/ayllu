@@ -78,6 +78,8 @@ button:disabled{opacity:.5;cursor:wait}
       <li><a href="/api/v1/ayllu/anatomy">anatomy</a></li>
       <li><a href="/api/v1/ayllu/second-brain">second brain</a></li>
       <li><a href="/api/v1/ayllu/hatun">hatun-mcp</a></li>
+      <li><a href="/api/v1/ayllu/ouroboros">ouroboros</a></li>
+      <li><a href="/api/v1/ayllu/invariants">invariants</a></li>
       <li><a href="/api/v1/ayllu/manifest">manifest</a></li>
     </ul>
     <p>Λ = Conjecture 1 · 0 runtime CDN · Apache-2.0</p>
@@ -128,18 +130,21 @@ button:disabled{opacity:.5;cursor:wait}
     <h2>Transcript + receipt</h2>
     <div id="out"></div>
     <h2>Organism</h2>
-    <div class="estate" id="organs"></div>
+    <div class="estate" id="organs">anatomy…</div>
     <div class="note" id="sb">second brain…</div>
     <div class="note" id="hatun">hatun-mcp…</div>
+    <div class="note" id="ouroboros">ouroboros…</div>
+    <div class="note" id="invariants">invariants…</div>
     <h2>What this consolidates</h2>
     <div class="estate" id="estate"></div>
-    <p class="note">Anatomy · second brain · ouroboros loop · 8 invariants · hatun-mcp. Λ = Conjecture 1. See <a href="/api/v1/ayllu/leaders" style="color:var(--teal)">leaders JSON</a>.</p>
+    <p class="note">Anatomy · second brain · ouroboros loop · 8 invariants · hatun-mcp. Fetched on boot. UNAVAILABLE if the call fails. Λ = Conjecture 1. See <a href="/api/v1/ayllu/leaders" style="color:var(--teal)">leaders JSON</a>.</p>
   </aside>
 </div>
 <script>
 const api = p => "/api/v1/ayllu/"+p;
 const esc = s => String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 const seats = [];
+const organsLive = [];
 const COLORS = ["#e8c074","#ff9a4a","#3af4c8","#b38bff","#7ad7ff","#7dffb0","#6ea8ff","#e8c074","#eef3f6","#ff7a9c","#c9d6e2"];
 let speaking = null;
 let dissentPairs = [];
@@ -151,7 +156,11 @@ async function j(url, opts){
     let d = {};
     try{ d = await r.json(); }catch(e){}
     return {ok:r.ok, status:r.status, data:d};
-  }catch(e){ return {ok:false, status:"network", data:{error:"unavailable"}}; }
+  }catch(e){ return {ok:false, status:"network", data:{error:"UNAVAILABLE"}}; }
+}
+function failLabel(r, prefix){
+  const why = (r && r.data && (r.data.error || r.data.honesty)) || (r && r.status) || "network";
+  return (prefix?prefix+": ":"") + "UNAVAILABLE · " + why;
 }
 
 function hueColor(i){ return COLORS[i % COLORS.length]; }
@@ -181,8 +190,12 @@ function renderRoster(roster, status){
   document.getElementById("k-mode").textContent = mode;
 }
 
-function renderTurns(payload){
+function renderTurns(payload, fetchOk){
   const out = document.getElementById("out");
+  if (!fetchOk){
+    out.innerHTML = `<div class="note">${esc(failLabel({ok:false,data:payload,status:payload&&payload.status}, "council/ask"))}</div>`;
+    return;
+  }
   const rounds = payload.rounds || payload.turns || (payload.answer ? [payload] : []);
   const syn = payload.converge || {};
   dissentPairs = [];
@@ -191,23 +204,102 @@ function renderTurns(payload){
   if (syn.semantic_consensus) html += `<div class="note">consensus: ${esc(syn.semantic_consensus)} · dissent markers: ${(syn.lexical_dissent||[]).length}</div>`;
   rounds.forEach(t=>{
     if (t.speaking) speaking = t.persona;
-    html += `<div class="turn"><div class="meta">${esc(t.persona)} · r${esc(t.round||1)} · ${esc(t.model||"")} · ${t.stub?"SOFTWARE":"LIVE"}</div><div class="ans">${esc(t.answer||t.honesty||"")}</div></div>`;
+    const kind = t.stub ? "SOFTWARE" : (t.model ? "LIVE" : "SOFTWARE");
+    html += `<div class="turn"><div class="meta">${esc(t.persona)} · r${esc(t.round||1)} · ${esc(t.model||"")} · ${kind}</div><div class="ans">${esc(t.answer||t.honesty||"")}</div></div>`;
   });
   if (payload.receipt) html += `<div class="note">receipt signed=${esc(payload.receipt.signed)} · ${esc(payload.receipt.honesty||"")}</div>`;
-  if (payload.chain) html += `<div class="note">turn chain head ${esc((payload.chain.head||"").slice(0,16))}… (${payload.chain.count})</div>`;
-  if (payload.ouroboros) html += `<div class="note">ouroboros exit=${esc(payload.ouroboros.exit)} tax=${esc(payload.ouroboros.tax)} budget=${esc(payload.ouroboros.budget)}</div>`;
-  if (payload.invariants) html += `<div class="note">invariants ${esc(payload.invariants.passed)}/8 ${payload.invariants.ok?"HOLD":"FAIL "+JSON.stringify(payload.invariants.failed)}</div>`;
+  if (payload.chain) html += `<div class="note">turn chain head ${esc((payload.chain.head||"").slice(0,16))}… (${payload.chain.count}) · ${esc(payload.chain.kind||"SOFTWARE")}</div>`;
   out.innerHTML = html || "<div class='note'>No turns yet. Convene the table.</div>";
   (syn.lexical_dissent||[]).forEach(d=>{
     dissentPairs.push(d.persona);
   });
+  renderOuroborosTax(payload.ouroboros);
+  renderInvariantsCheck(payload.invariants);
 }
 
-function renderEstate(cat){
+function renderEstate(cat, fetchOk){
   const box = document.getElementById("estate");
-  box.innerHTML = (cat.consolidated||[]).map(x=>
+  if (!fetchOk){ box.textContent = "UNAVAILABLE"; return; }
+  const rows = cat.consolidated||[];
+  box.innerHTML = rows.length ? rows.map(x=>
     `<a href="${esc((x.urls&&x.urls[0])||'#')}" target="_blank" rel="noopener">${esc(x.name)}</a>`
+  ).join("") : "UNAVAILABLE";
+}
+
+function renderOrgans(payload, fetchOk){
+  const og = document.getElementById("organs");
+  organsLive.length = 0;
+  if (!fetchOk){ og.textContent = "UNAVAILABLE"; return; }
+  const list = payload.organs || [];
+  if (!list.length){ og.textContent = "UNAVAILABLE"; return; }
+  list.forEach((o,i)=>{
+    const short = String(o.name||o.id||"").split("/").pop().trim();
+    organsLive.push({
+      id: o.id, name: o.name, role: o.role, short,
+      color: o.color || COLORS[i % COLORS.length]
+    });
+  });
+  og.innerHTML = organsLive.map(o =>
+    `<a href="${esc(o.space || ("#"+o.id))}">${esc(o.name)} · ${esc(o.role)}</a>`
   ).join("");
+}
+
+function renderBrain(r){
+  const el = document.getElementById("sb");
+  if (!r.ok){ el.textContent = failLabel(r, "second brain"); return; }
+  const d = r.data || {};
+  const state = d.state || "UNAVAILABLE";
+  const ready = d.ready_for_grounded_navigation === true ? "READY" : "UNAVAILABLE";
+  el.innerHTML = "second brain: " + esc(state) + " · grounded=" + esc(ready) + " · " + esc(d.system_id || "")
+    + ' · YACHAY <a href="https://huggingface.co/spaces/SZLHOLDINGS/second-brain">Space</a>';
+}
+
+function renderHatun(r){
+  const el = document.getElementById("hatun");
+  if (!r.ok){ el.textContent = failLabel(r, "hatun-mcp"); return; }
+  const h = ((r.data||{}).healthz||{}).label || "UNAVAILABLE";
+  const z = ((r.data||{}).readyz||{}).label || "UNAVAILABLE";
+  el.textContent = "hatun-mcp healthz=" + h + " · readyz=" + z;
+}
+
+function renderOuroboros(r){
+  const el = document.getElementById("ouroboros");
+  if (!r.ok){ el.textContent = failLabel(r, "ouroboros"); return; }
+  const d = r.data || {};
+  el.textContent = "ouroboros: " + (d.kind || "SOFTWARE") +
+    " last=" + (d.last_label || d.last || "UNAVAILABLE") +
+    " exit=" + (d.exit || "UNAVAILABLE");
+}
+
+function renderOuroborosTax(tax){
+  const el = document.getElementById("ouroboros");
+  if (!tax){ el.textContent = "ouroboros: UNAVAILABLE · no tax on this request"; return; }
+  el.textContent = "ouroboros: " + (tax.kind || "SOFTWARE") +
+    " exit=" + (tax.exit || "UNAVAILABLE") +
+    " tax=" + (tax.tax == null ? "UNAVAILABLE" : tax.tax) +
+    " budget=" + (tax.budget == null ? "UNAVAILABLE" : tax.budget);
+}
+
+function renderInvariants(r){
+  const el = document.getElementById("invariants");
+  if (!r.ok){ el.textContent = failLabel(r, "invariants"); return; }
+  const d = r.data || {};
+  const n = d.count || (d.catalog||[]).length || 8;
+  el.textContent = "invariants: " + (d.kind || "SOFTWARE") + " catalog " + n +
+    " · last=" + (d.last_label || d.last || "UNAVAILABLE");
+}
+
+function renderInvariantsCheck(inv){
+  const el = document.getElementById("invariants");
+  if (!inv){ el.textContent = "invariants: UNAVAILABLE · no receipt on this request"; return; }
+  const n = inv.count || 8;
+  const passed = inv.passed;
+  if (passed == null){
+    el.textContent = "invariants: UNAVAILABLE · last=" + (inv.last || "UNAVAILABLE");
+    return;
+  }
+  el.textContent = "invariants: " + (inv.kind || "SOFTWARE") + " " + passed + "/" + n +
+    (inv.ok ? " HOLD" : " FAIL " + JSON.stringify(inv.failed || []));
 }
 
 /* 0-CDN holographic chamber: projected 3D, additive glow, khipu torus knot. */
@@ -291,13 +383,16 @@ function frame(){
       ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
     }
   });
-  const ORGAN_COLORS = ["#ff7a9c","#e8c074","#3af4c8","#7ad7ff","#c9d6e2"];
-  ORGAN_COLORS.forEach((col,i)=>{
-    const a = (i/5)*Math.PI*2 + rot*0.4;
+  organsLive.forEach((organ,i)=>{
+    const a = (i/Math.max(organsLive.length,1))*Math.PI*2 + rot*0.4;
     const q = proj(Math.cos(a)*0.95, 0.02, Math.sin(a)*0.95, w, h);
-    ctx.fillStyle = col; ctx.globalAlpha = 0.8;
+    ctx.fillStyle = organ.color; ctx.globalAlpha = 0.85;
     ctx.beginPath(); ctx.arc(q[0], q[1], 5*q[2]*devicePixelRatio, 0, Math.PI*2); ctx.fill();
     ctx.globalAlpha = 1;
+    ctx.font = `${9*devicePixelRatio}px ui-monospace,monospace`;
+    ctx.fillStyle = "#eef3f6";
+    ctx.textAlign = "center";
+    ctx.fillText(organ.short || organ.id, q[0], q[1]+12*devicePixelRatio);
   });
   ctx.restore();
   requestAnimationFrame(frame);
@@ -314,7 +409,13 @@ document.getElementById("form").addEventListener("submit", async (e)=>{
   };
   const r = await j(api("council"), {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body)});
   speaking = null;
-  renderTurns(r.data);
+  if (!r.ok){
+    renderTurns({error: r.data.error || r.status, status: r.status}, false);
+    renderOuroborosTax(null);
+    renderInvariantsCheck(null);
+  } else {
+    renderTurns(r.data, true);
+  }
   btn.disabled = false;
 });
 document.getElementById("askone").addEventListener("click", async ()=>{
@@ -325,25 +426,34 @@ document.getElementById("askone").addEventListener("click", async ()=>{
     persona: speaking, prompt: document.getElementById("q").value
   })});
   speaking = null;
-  renderTurns(r.data.turn ? {rounds:[r.data.turn], receipt:r.data.receipt, honesty:r.data.honesty} : r.data);
+  if (!r.ok){
+    renderTurns({error: r.data.error || r.status, status: r.status}, false);
+  } else {
+    renderTurns(r.data.turn ? {rounds:[r.data.turn], receipt:r.data.receipt, honesty:r.data.honesty} : r.data, true);
+    renderOuroborosTax(null);
+    renderInvariantsCheck(null);
+  }
   btn.disabled = false;
 });
 
 (async function boot(){
-  const [roster, estate, health, anatomy, brain, hatun] = await Promise.all([
+  const [roster, estate, health, anatomy, brain, hatun, loop, inv] = await Promise.all([
     j(api("roster")), j(api("estate")), j("/health"),
-    j(api("anatomy")), j(api("second-brain")), j(api("hatun"))
+    j(api("anatomy")), j(api("second-brain")), j(api("hatun")),
+    j(api("ouroboros")), j(api("invariants"))
   ]);
-  renderRoster((roster.data.personas||roster.data.roster||[]), roster.data.backend || health.data);
-  renderEstate(estate.data);
-  const og = document.getElementById("organs");
-  og.innerHTML = (anatomy.data.organs||[]).map(o =>
-    `<a href="#">${esc(o.name)} · ${esc(o.role)}</a>`
-  ).join("");
-  const sb = brain.data || {};
-  document.getElementById("sb").textContent = "second brain: " + (sb.state || "UNAVAILABLE");
-  const ht = hatun.data || {};
-  document.getElementById("hatun").textContent = "hatun-mcp healthz: " + ((ht.healthz||{}).label || "UNAVAILABLE");
+  if (roster.ok){
+    renderRoster((roster.data.personas||roster.data.roster||[]), roster.data.backend || (health.ok && health.data));
+  } else {
+    renderRoster([], health.ok ? health.data : null);
+    document.getElementById("k-mode").textContent = "UNAVAILABLE";
+  }
+  renderEstate(estate.data || {}, estate.ok);
+  renderOrgans(anatomy.data || {}, anatomy.ok);
+  renderBrain(brain);
+  renderHatun(hatun);
+  renderOuroboros(loop);
+  renderInvariants(inv);
 })();
 </script>
 </body>

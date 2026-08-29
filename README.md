@@ -48,6 +48,12 @@ This organ is the continuance. The eleven seats are not deleted.
 | `GET /api/v1/counsel/allodial` | experimental MODELED composite (not locked-8) |
 | `POST /api/v1/counsel/infer` | grok-4.5 matter brief; fail-closed Human Lock |
 | `GET /api/v1/ayllu/manifest` | machine-readable contract |
+| `GET /api/v1/ayllu/anatomy` | five SOFTWARE organs (inner ring) |
+| `GET /api/v1/ayllu/second-brain` | compound-model state; public 575-chunk index stats when corpus is present |
+| `GET /api/v1/ayllu/retrieve?q=` | Maskaq handles only — no node text, never LIVE retrieval |
+| `GET /api/v1/ayllu/hatun` | hatun-mcp healthz/readyz, LIVE or UNAVAILABLE |
+| `GET /api/v1/ayllu/ouroboros` | SOFTWARE loop identity; last tax UNAVAILABLE without a receipt |
+| `GET /api/v1/ayllu/invariants` | eight named checks; last evaluation UNAVAILABLE without a receipt |
 
 Personas are **roles on one routed backend**, not eleven trained models.
 State-changing actions require two-person attestation. Semantic consensus

@@ -121,6 +121,27 @@ async def run_turn(
             honesty = (f"model backend raised: {str(exc)[:120]} "
                        "(honest — no fabricated answer)")
 
+    if (
+        str(getattr(persona, "name", "")).lower() == "maskaq"
+        and not isinstance(grounding, dict)
+    ):
+        try:
+            from ayllu.second_brain import navigator_context
+            grounding = navigator_context(prompt, k=6)
+        except Exception as exc:
+            grounding = {
+                "schema": "szl.brain.navigator-context/v1",
+                "ready": False,
+                "kind": "SOFTWARE",
+                "content_access": "HANDLES_ONLY",
+                "handles": [],
+                "honesty": f"UNAVAILABLE · navigator {type(exc).__name__}",
+            }
+        if isinstance(grounding, dict) and not grounding.get("ready"):
+            answer = "ABSTAIN"
+            extra = "ungrounded Maskaq turn — ABSTAIN. No LIVE retrieval fabricated."
+            honesty = f"{honesty} {extra}" if honesty else extra
+
     binding = persona_binding(
         persona.name,
         actual_model=model,

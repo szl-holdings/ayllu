@@ -14,6 +14,32 @@ from typing import Any
 MAX_ROUNDS = 2  # debate = 2, single = 1 — never open-ended
 
 
+def identity() -> dict[str, Any]:
+    """SOFTWARE kernel identity. No tax without a council receipt this request."""
+    return {
+        "schema": "szl.ayllu.ouroboros/v1",
+        "source": "https://github.com/szl-holdings/ouroboros",
+        "kernel_twin": "https://github.com/szl-holdings/szl-ouroboros",
+        "kind": "SOFTWARE",
+        "identity": "receipts.in ≡ receipts.out",
+        "budget": MAX_ROUNDS,
+        "rounds_spent": 0,
+        "tax": None,
+        "exit": "UNAVAILABLE",
+        "chain_head": None,
+        "last": "UNAVAILABLE",
+        "last_label": "UNAVAILABLE",
+        "terminating": True,
+        "perpetual_motion": False,
+        "lambda": "CONJECTURE_1",
+        "honesty": (
+            "SOFTWARE bounded-loop kernel identity. Last tax is UNAVAILABLE until a "
+            "council receipt exists on this request. Always terminates. Not the "
+            "TypeScript runLoop binary. Not measured CUDA."
+        ),
+    }
+
+
 def tax(mode: str, round_count: int, chain_head: str) -> dict[str, Any]:
     rounds = int(round_count)
     budget = MAX_ROUNDS
