@@ -1,6 +1,6 @@
 # Ayllu Counsel — Hugging Face Docker Space.
-# ECR pin avoids Docker Hub exit 128. Explicit COPY — no pytest cache.
-FROM public.ecr.aws/docker/library/python:3.12-slim
+# GCR pin — ECR Public is factory exit 128; Anatomy Space already runs this FROM exit 128. Explicit COPY — no pytest cache.
+FROM mirror.gcr.io/library/python:3.12-slim
 
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=7860
