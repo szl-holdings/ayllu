@@ -1,13 +1,13 @@
 ---
 title: Ayllu Counsel
-emoji: ♁
-colorFrom: teal
+emoji: 💠
+colorFrom: green
 colorTo: yellow
 sdk: docker
 app_port: 7860
 pinned: false
 license: apache-2.0
-short_description: Evidence-bound holographic agent counsel. 11 Quechua seats. Λ = Conjecture 1.
+short_description: Holographic agent counsel. 11 seats. Conjecture 1.
 tags:
   - agent-council
   - holographic
