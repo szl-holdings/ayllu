@@ -44,6 +44,8 @@ class Psyche:
         self.lock = HumanLock()
         self.prev_hash = GENESIS
         self.pulses = 0
+        self.prior_loads: list[float] = []
+        self.last_winay: dict[str, Any] | None = None
 
     def set_lock(self, engaged: bool) -> dict[str, Any]:
         if engaged:
@@ -234,6 +236,8 @@ class Psyche:
             return {"schema": SCHEMA, "ok": False, "blocked": True, **minted, "lambda": LAMBDA}
         self.yuyay.reset()
         self.graph = TypedHypergraph()
+        self.prior_loads = []
+        self.last_winay = None
         minted = self._mint("reset", "ALLOW", Honesty.MEASURED.value, {}, "Yuyay and graph reset.")
         return {"schema": SCHEMA, "ok": True, "stats": self.yuyay.stats(), **minted, "lambda": LAMBDA}
 
@@ -248,6 +252,7 @@ class Psyche:
             "organs": SEAT_ORGANS,
             "pulses": self.pulses,
             "organsLive": list(KAWSAY_ORGANS),
+            "winay": self.last_winay,
             "presence": "CONJECTURE",
             "agi": "CONJECTURE",
             "chainHead": self.prev_hash,
@@ -267,6 +272,9 @@ class Psyche:
             "seats": 11,
             "organs": 5,
             "pulses": self.pulses,
+            "winay": "OPERATIONAL",
+            "closure": bool((self.last_winay or {}).get("closure", {}).get("value")),
+            "ignition": bool((self.last_winay or {}).get("ignition", {}).get("value")),
             "presence": "CONJECTURE",
             "agi": "CONJECTURE",
             "honesty": Honesty.MEASURED.value,
@@ -345,13 +353,16 @@ class Psyche:
             handles=sensed.get("handles") or [],
             prev_hash=self.prev_hash,
             pulse=self.pulses,
+            prior=self.prior_loads,
         )
+        self.prior_loads = [float(o.get("load") or 0) for o in ran.get("organs") or []]
+        self.last_winay = ran.get("winay") if isinstance(ran.get("winay"), dict) else None
         minted = self._mint(
             "beat",
             "ALLOW",
             Honesty.MEASURED.value,
             {"cue": cue, "seat": seat, "pulse": self.pulses},
-            "Kawsay pulse. Five organs. Presence CONJECTURE.",
+            "Kawsay pulse. Wiñay OPERATIONAL. Presence CONJECTURE.",
         )
         self.prev_hash = ran.get("hash") or self.prev_hash
         return {
@@ -364,6 +375,21 @@ class Psyche:
             },
             "stats": self.yuyay.stats(),
             **minted,
+        }
+
+    def winay(self) -> dict[str, Any]:
+        if self.last_winay:
+            return {**self.last_winay, "pulses": self.pulses}
+        return {
+            "schema": "szl.ayllu.winay/v1",
+            "theory": "OPERATIONAL",
+            "ready": False,
+            "honesty": Honesty.UNAVAILABLE.value,
+            "presence": "CONJECTURE",
+            "agi": "CONJECTURE",
+            "lambda": LAMBDA,
+            "joules": ENERGY,
+            "note": "No beat this process. Cue /api/v1/psyche/beat.",
         }
 
 

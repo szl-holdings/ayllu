@@ -221,6 +221,9 @@ def test_kawsay_beat_presence_stays_conjecture() -> None:
     assert 0.0 <= ran["sync"]["R"] <= 1.0
     assert ran["sync"]["gamma"] == 0.138
     assert len(ran["hash"]) == 64
+    assert ran["winay"]["theory"] == "OPERATIONAL"
+    assert ran["winay"]["presence"]["honesty"] == "CONJECTURE"
+    assert ran["winay"]["closure"]["honesty"] == "MEASURED"
 
 
 def test_kawsay_graft_fail_closed() -> None:
@@ -256,3 +259,69 @@ def test_kawsay_api_beat_and_sense() -> None:
     assert health.json()["presence"] == "CONJECTURE"
     assert health.json()["agi"] == "CONJECTURE"
     assert health.json()["pulses"] >= 1
+    assert health.json()["winay"] == "OPERATIONAL"
+
+
+def test_winay_closure_operational_presence_stays_conjecture() -> None:
+    from ayllu.psyche.winay import couple_fixed, evaluate, metabolize, order_parameter
+
+    fire = [1.0, 0.05, 0.85, 0.9, 0.7]
+    mixed = metabolize(fire, [0.2, 0.2, 0.2, 0.2, 0.2])
+    assert mixed != fire
+    coupled, steps, residual = couple_fixed(mixed)
+    assert steps >= 1
+    assert residual >= 0.0
+    assert all(0.0 <= L <= 1.0 for L in coupled)
+    R = order_parameter(coupled)
+    assert 0.0 <= R <= 1.0
+    organs = [
+        {"id": name, "decision": "ALLOW", "load": load}
+        for name, load in zip(["Puriq", "Yuyay", "Tinku", "Khipu", "Lloqsi"], coupled)
+    ]
+    ran = evaluate(
+        organs,
+        prev_hash="0" * 64,
+        new_hash="a" * 64,
+        lock=True,
+        peak=0.4,
+        handles=3,
+        steps=steps,
+        residual=residual,
+    )
+    assert ran["theory"] == "OPERATIONAL"
+    assert ran["closure"]["value"] is True
+    assert ran["closure"]["honesty"] == "MEASURED"
+    assert ran["ignition"]["value"] is True
+    assert ran["ignition"]["honesty"] == "MEASURED"
+    assert ran["presence"]["honesty"] == "CONJECTURE"
+    assert ran["agi"]["honesty"] == "CONJECTURE"
+    assert ran["joules"] is ENERGY
+    dark = evaluate(
+        organs,
+        prev_hash="0" * 64,
+        new_hash="b" * 64,
+        lock=False,
+        peak=0.0,
+        handles=0,
+        steps=steps,
+        residual=residual,
+    )
+    assert dark["ignition"]["value"] is False
+    assert dark["presence"]["label"] == "CONJECTURE"
+
+
+def test_winay_prior_changes_next_beat() -> None:
+    p = Psyche()
+    first = p.beat("khipu knot", seat="Maskaq")
+    second = p.beat("khipu knot", seat="Maskaq")
+    assert first["winay"]["theory"] == "OPERATIONAL"
+    assert second["winay"]["theory"] == "OPERATIONAL"
+    assert first["organs"][0]["load"] != second["organs"][0]["load"] or first["sync"]["R"] != second["sync"]["R"]
+    assert second["presence"]["honesty"] == "CONJECTURE"
+    assert second["winay"]["ignition"]["honesty"] == "MEASURED"
+    p.set_lock(True)
+    lit = p.beat("Lambda uniqueness conjecture", seat="Maskaq")
+    assert lit["winay"]["ignition"]["value"] in (True, False)
+    assert lit["presence"]["label"] == "CONJECTURE"
+    w = p.winay()
+    assert w["presence"]["honesty"] == "CONJECTURE" or w.get("presence") == "CONJECTURE"

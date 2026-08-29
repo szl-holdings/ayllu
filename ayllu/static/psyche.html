@@ -74,6 +74,8 @@ canvas#graph{width:100%;height:280px;display:block;background:#071018;border-rad
     <div class="kpi"><b id="k-alpha">—</b><span>α load MODELED</span></div>
     <div class="kpi"><b id="k-occ">0/5</b><span>occupancy MEASURED</span></div>
     <div class="kpi"><b id="k-sync">—</b><span>sync R MODELED</span></div>
+    <div class="kpi"><b id="k-close">—</b><span>closure MEASURED</span></div>
+    <div class="kpi"><b id="k-ignite">—</b><span>ignition MEASURED</span></div>
     <div class="kpi"><b id="k-joules">null</b><span>joules · presence CONJECTURE</span></div>
   </div>
   <div class="grid">
@@ -244,9 +246,12 @@ document.getElementById("pulse").onclick = async () => {
   const ws = d.workspace || {};
   document.getElementById("k-occ").textContent = (ws.occupancy||0)+"/"+(ws.of||5);
   document.getElementById("k-sync").textContent = d.sync && d.sync.R != null ? Number(d.sync.R).toFixed(3) : "—";
+  const w = d.winay || {};
+  document.getElementById("k-close").textContent = w.closure ? (w.closure.value ? "closed" : "open") : "—";
+  document.getElementById("k-ignite").textContent = w.ignition ? (w.ignition.value ? "bound" : "dark") : "—";
   const organs = (d.organs||[]).map(o => o.id+":"+o.decision).join(" → ");
   document.getElementById("beatout").textContent =
-    "pulse "+(d.pulse||0)+" · "+organs+" · presence "+((d.presence&&d.presence.label)||"CONJECTURE")+" · AGI "+((d.agi&&d.agi.label)||"CONJECTURE")+" · joules null";
+    "pulse "+(d.pulse||0)+" · "+organs+" · C "+(w.closure && w.closure.value ? "closed" : "open")+" · I "+(w.ignition && w.ignition.value ? "bound" : "dark")+" · presence CONJECTURE · AGI CONJECTURE · joules null";
   if (ws.handles && ws.handles.length){
     renderHits({ranked: ws.handles.map(h => ({text: h.label, source: h.nodeId, weight: 0, honesty: "SOFTWARE"}))});
   }

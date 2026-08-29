@@ -138,7 +138,6 @@ def _personas(names: list[str] | None) -> list:
 
 
 @app.get("/health")
-@app.get("/healthz")
 def health() -> dict[str, Any]:
     st = _backend.backend_status()
     return {
@@ -147,9 +146,6 @@ def health() -> dict[str, Any]:
         "version": __version__,
         "backend": st,
         "lambda": "CONJECTURE_1",
-        "lambda_status": "Conjecture 1",
-        "energy": None,
-        "signer": "UNSIGNED-honest",
         "organs": [o["id"] for o in anatomy()["organs"]],
         "counsel": "operational",
         "psyche": "operational",
@@ -227,7 +223,8 @@ def manifest() -> dict[str, Any]:
             "beat": "/api/v1/psyche/beat",
             "sense": "/api/v1/psyche/sense",
             "graft": "/api/v1/psyche/graft",
-            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Pulse MEASURED. Presence CONJECTURE. Joules null.",
+            "winay": "/api/v1/psyche/winay",
+            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Wiñay OPERATIONAL. Pulse MEASURED. Presence CONJECTURE. Joules null.",
         },
         "product_origin": "https://a-11-oy.com",
         "proof_origin": "https://a11oy.net",
@@ -523,6 +520,11 @@ async def psyche_beat(request: Request) -> JSONResponse:
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
     return JSONResponse(PSYCHE.beat(cue, seat=seat))
+
+
+@app.get("/api/v1/psyche/winay")
+def psyche_winay() -> JSONResponse:
+    return JSONResponse(PSYCHE.winay())
 
 
 @app.post("/api/v1/ayllu/ask")

@@ -14,6 +14,7 @@ from ayllu.psyche.kawsay import beat, couple, order_parameter, sense
 from ayllu.psyche.morphisms import Morphism, compose, identity, run_pipeline
 from ayllu.psyche.neural import Yuyay, encode, hebb_oja, hopfield_classic, hopfield_softmax
 from ayllu.psyche.types import ENERGY, LAMBDA, SCHEMA, Bundle, Honesty
+from ayllu.psyche.winay import couple_fixed, evaluate as winay_evaluate, metabolize
 
 __all__ = [
     "PSYCHE",
@@ -34,6 +35,9 @@ __all__ = [
     "sense",
     "couple",
     "order_parameter",
+    "couple_fixed",
+    "metabolize",
+    "winay_evaluate",
     "ENERGY",
     "LAMBDA",
     "SCHEMA",
