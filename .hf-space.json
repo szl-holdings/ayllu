@@ -16,9 +16,11 @@
   ],
   "smoke_paths": [
     "/",
+    "/counsel",
     "/health",
     "/api/v1/ayllu/roster",
-    "/api/v1/ayllu/manifest"
+    "/api/v1/ayllu/manifest",
+    "/api/v1/counsel/allodial"
   ],
   "wait_running_seconds": 600
 }

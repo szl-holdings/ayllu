@@ -1,6 +1,7 @@
 """Ayllu Counsel — standalone FastAPI product.
 
 Holographic chamber at GET /
+Legal Matter Command at GET /counsel
 Evidence-bound council at POST /api/v1/ayllu/council
 Honesty labels: LIVE / SOFTWARE / UNSIGNED / NOT_MEASURED / CONJECTURE_1
 """
@@ -19,6 +20,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 
 from ayllu import SCHEMA_COUNCIL, __version__
 from ayllu import backend as _backend
+from ayllu import counsel as _counsel
 from ayllu.converge import synthesize
 from ayllu.estate import catalog
 from ayllu.hatun import status as hatun_status
@@ -32,6 +34,7 @@ from ayllu.personas import ROSTER, get_persona
 from ayllu.receipts import chain_turns, make_receipt, sha256_json
 
 CHAMBER = Path(__file__).resolve().parent / "ayllu" / "static" / "chamber.html"
+COUNSEL_HTML = Path(__file__).resolve().parent / "ayllu" / "static" / "counsel.html"
 MAX_PROMPT_CHARS = 6000
 MAX_BODY_BYTES = 24 * 1024
 COUNCIL_MAX = 5
@@ -44,7 +47,7 @@ NS = "ayllu"
 app = FastAPI(
     title="Ayllu Counsel",
     version=__version__,
-    description="Evidence-bound holographic agent counsel. Λ = Conjecture 1.",
+    description="Evidence-bound holographic agent counsel + Legal Matter Command. Λ = Conjecture 1.",
 )
 _LOUNGE = Lounge()
 
@@ -73,6 +76,7 @@ class _RateBucket:
 
 _ASK_BUCKET = _RateBucket(30, 60.0)
 _COUNCIL_BUCKET = _RateBucket(8, 60.0)
+_COUNSEL_BUCKET = _RateBucket(20, 60.0)
 
 
 async def _bounded_json_body(request: Request) -> dict[str, Any]:
@@ -135,6 +139,7 @@ def health() -> dict[str, Any]:
         "backend": st,
         "lambda": "CONJECTURE_1",
         "organs": [o["id"] for o in anatomy()["organs"]],
+        "counsel": "operational",
         "origins": catalog()["origins"],
     }
 
@@ -147,6 +152,11 @@ def chamber() -> HTMLResponse:
 @app.get("/ayllu", response_class=HTMLResponse)
 def chamber_alias() -> HTMLResponse:
     return chamber()
+
+
+@app.get("/counsel", response_class=HTMLResponse)
+def counsel_surface() -> HTMLResponse:
+    return HTMLResponse(COUNSEL_HTML.read_text(encoding="utf-8"))
 
 
 @app.get("/api/v1/ayllu/roster")
@@ -183,6 +193,12 @@ def manifest() -> dict[str, Any]:
         },
         "default_seats": COUNCIL_DEFAULT,
         "receipts": "UNSIGNED-honest unless a signer is injected",
+        "counsel": {
+            "surface": "/counsel",
+            "docket": "/api/v1/counsel/docket",
+            "infer": "/api/v1/counsel/infer",
+            "honesty": "Continuance of retired Counsel. Not a deletion of the eleven seats.",
+        },
         "product_origin": "https://a-11-oy.com",
         "proof_origin": "https://a11oy.net",
         "github": "https://github.com/szl-holdings/ayllu",
@@ -235,6 +251,69 @@ def lounge_feed() -> dict[str, Any]:
         "feed": _LOUNGE.recent(),
         "honesty": "Opt-in in-memory feed. Public ask/council do not auto-publish.",
     }
+
+
+@app.get("/api/v1/counsel/snapshot")
+def counsel_snapshot() -> dict[str, Any]:
+    return _counsel.snapshot()
+
+
+@app.get("/api/v1/counsel/health")
+def counsel_health() -> dict[str, Any]:
+    return _counsel.organ_health()
+
+
+@app.get("/api/v1/counsel/docket")
+def counsel_docket() -> dict[str, Any]:
+    return _counsel.legal_docket(12)
+
+
+@app.get("/api/v1/counsel/estate")
+def counsel_estate() -> dict[str, Any]:
+    return _counsel.hub_estate()
+
+
+@app.get("/api/v1/counsel/allodial")
+def counsel_allodial() -> dict[str, Any]:
+    return _counsel.allodial_score()
+
+
+@app.get("/api/v1/counsel/leaders")
+def counsel_leaders() -> dict[str, Any]:
+    return {
+        "schema": "szl.ayllu.counsel-leaders/v1",
+        "leaders": _counsel.LEADERS,
+        "honesty": "Studied, not copied. OPERATIONAL local scans; grok-4.5 only on user submit.",
+        "lambda": "CONJECTURE_1",
+    }
+
+
+@app.post("/api/v1/counsel/infer")
+async def counsel_infer(request: Request) -> JSONResponse:
+    ok, retry = _COUNSEL_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        prompt = _clip_prompt(body.get("prompt") or body.get("q") or body.get("input") or "")
+        action = str(body.get("action") or "brief")
+        human_lock = bool(body.get("human_lock") or body.get("humanLock") or body.get("lock"))
+        prev = str(body.get("prev_hash") or body.get("prevHash") or _counsel.GENESIS)
+        context = body.get("context")
+        if context is not None:
+            context = str(context)[:6000]
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    result = _counsel.infer(
+        action=action,
+        prompt=prompt,
+        human_lock=human_lock,
+        prev_hash=prev,
+        context=context,
+    )
+    return JSONResponse(result)
 
 
 @app.post("/api/v1/ayllu/ask")
@@ -363,7 +442,7 @@ def robots() -> str:
 
 @app.get("/readyz")
 def readyz() -> dict[str, Any]:
-    return {"ready": True, "version": __version__, "lambda": "CONJECTURE_1"}
+    return {"ready": True, "version": __version__, "lambda": "CONJECTURE_1", "counsel": True}
 
 
 if __name__ == "__main__":

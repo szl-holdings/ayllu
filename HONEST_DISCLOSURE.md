@@ -9,11 +9,16 @@
 | Council effectiveness | NOT_MEASURED |
 | Receipt signatures | UNSIGNED unless a Cosign signer is injected; never fabricated |
 | Λ uniqueness | CONJECTURE 1 — never a theorem, never green |
-| LIVE model answers | Only when CHASKI-R2 `:8098`, Ollama, or `OPENAI_BASE_URL` is reachable |
+| LIVE model answers | grok-4.5 when `XAI_API_KEY` is set and reachable; else CHASKI-R2 `:8098`, Ollama, or `OPENAI_BASE_URL` |
+| Legal Matter Command `/counsel` | OPERATIONAL. Live a11oy legal vertical is REPORTED when the scrape answers; otherwise UNAVAILABLE |
+| Human Lock | MEASURED fail-closed on brief / draft / docket-brief / council |
+| Allodial 𝒜 | MODELED experimental composite. Not locked-8. Not a land patent |
 | Hugging Face Space | REPORTED after publish; ROADMAP until the Hub token accepts the Space |
 | a-11-oy.com / a11oy.net showcase | REPORTED after the Pages/PR lands |
+| Retired Counsel artifact | SUPERSEDED, retained. Not deleted |
 | Physical effectors | Not in this product |
 | Eleven separately trained models | False. Roles on one routed backend |
 
 This product is the split-out of the a11oy `/ayllu` organ. a11oy still hosts
 the organ. This repository is the canonical Python product and hologram.
+Legal Matter Command is instilled here as continuance of retired Counsel.
