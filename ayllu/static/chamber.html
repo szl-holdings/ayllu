@@ -74,9 +74,10 @@ button:disabled{opacity:.5;cursor:wait}
     <p>Holographic counsel requires JavaScript for the chamber. The API is still live:</p>
     <ul>
       <li><a href="/api/v1/ayllu/roster">roster</a></li>
+      <li><a href="/api/v1/ayllu/anatomy">anatomy</a></li>
+      <li><a href="/api/v1/ayllu/second-brain">second brain</a></li>
+      <li><a href="/api/v1/ayllu/hatun">hatun-mcp</a></li>
       <li><a href="/api/v1/ayllu/manifest">manifest</a></li>
-      <li><a href="/api/v1/ayllu/estate">estate catalog</a></li>
-      <li><a href="/api/v1/ayllu/leaders">leaders studied</a></li>
     </ul>
     <p>Λ = Conjecture 1 · 0 runtime CDN · Apache-2.0</p>
   </div>
@@ -102,7 +103,7 @@ button:disabled{opacity:.5;cursor:wait}
       <div><b id="k-seats">11</b>personas</div>
       <div><b id="k-mode">—</b>backend</div>
       <div><b>NOT_MEASURED</b>consensus</div>
-      <div><b>Conjecture 1</b>Λ uniqueness</div>
+      <div><b>5</b>anatomy organs</div>
     </div>
     <div id="roster"></div>
     <p class="law">Roles on one routed backend — not eleven models. State-changing actions need two-person attestation. The tribe's "always execute" mandate is not in force.</p>
@@ -124,9 +125,13 @@ button:disabled{opacity:.5;cursor:wait}
   <aside class="right">
     <h2>Transcript + receipt</h2>
     <div id="out"></div>
+    <h2>Organism</h2>
+    <div class="estate" id="organs"></div>
+    <div class="note" id="sb">second brain…</div>
+    <div class="note" id="hatun">hatun-mcp…</div>
     <h2>What this consolidates</h2>
     <div class="estate" id="estate"></div>
-    <p class="note">Leaders studied, none copied: Unanimous Hyperchat, Multiagent Debate, 3D LLM councils, AutoGen/CrewAI/CAMEL, EvoTavern Council. We kept receipts, fail-closed law, and dissent. See <a href="/api/v1/ayllu/leaders" style="color:var(--teal)">leaders JSON</a>.</p>
+    <p class="note">Anatomy · second brain · ouroboros loop · 8 invariants · hatun-mcp. Λ = Conjecture 1. See <a href="/api/v1/ayllu/leaders" style="color:var(--teal)">leaders JSON</a>.</p>
   </aside>
 </div>
 <script>
@@ -188,6 +193,8 @@ function renderTurns(payload){
   });
   if (payload.receipt) html += `<div class="note">receipt signed=${esc(payload.receipt.signed)} · ${esc(payload.receipt.honesty||"")}</div>`;
   if (payload.chain) html += `<div class="note">turn chain head ${esc((payload.chain.head||"").slice(0,16))}… (${payload.chain.count})</div>`;
+  if (payload.ouroboros) html += `<div class="note">ouroboros exit=${esc(payload.ouroboros.exit)} tax=${esc(payload.ouroboros.tax)} budget=${esc(payload.ouroboros.budget)}</div>`;
+  if (payload.invariants) html += `<div class="note">invariants ${esc(payload.invariants.passed)}/8 ${payload.invariants.ok?"HOLD":"FAIL "+JSON.stringify(payload.invariants.failed)}</div>`;
   out.innerHTML = html || "<div class='note'>No turns yet. Convene the table.</div>";
   (syn.lexical_dissent||[]).forEach(d=>{
     dissentPairs.push(d.persona);
@@ -282,6 +289,14 @@ function frame(){
       ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
     }
   });
+  const ORGAN_COLORS = ["#ff7a9c","#e8c074","#3af4c8","#7ad7ff","#c9d6e2"];
+  ORGAN_COLORS.forEach((col,i)=>{
+    const a = (i/5)*Math.PI*2 + rot*0.4;
+    const q = proj(Math.cos(a)*0.95, 0.02, Math.sin(a)*0.95, w, h);
+    ctx.fillStyle = col; ctx.globalAlpha = 0.8;
+    ctx.beginPath(); ctx.arc(q[0], q[1], 5*q[2]*devicePixelRatio, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+  });
   ctx.restore();
   requestAnimationFrame(frame);
 }
@@ -313,11 +328,20 @@ document.getElementById("askone").addEventListener("click", async ()=>{
 });
 
 (async function boot(){
-  const [roster, estate, health] = await Promise.all([
-    j(api("roster")), j(api("estate")), j("/health")
+  const [roster, estate, health, anatomy, brain, hatun] = await Promise.all([
+    j(api("roster")), j(api("estate")), j("/health"),
+    j(api("anatomy")), j(api("second-brain")), j(api("hatun"))
   ]);
   renderRoster((roster.data.personas||roster.data.roster||[]), roster.data.backend || health.data);
   renderEstate(estate.data);
+  const og = document.getElementById("organs");
+  og.innerHTML = (anatomy.data.organs||[]).map(o =>
+    `<a href="#">${esc(o.name)} · ${esc(o.role)}</a>`
+  ).join("");
+  const sb = brain.data || {};
+  document.getElementById("sb").textContent = "second brain: " + (sb.state || "UNAVAILABLE");
+  const ht = hatun.data || {};
+  document.getElementById("hatun").textContent = "hatun-mcp healthz: " + ((ht.healthz||{}).label || "UNAVAILABLE");
 })();
 </script>
 </body>

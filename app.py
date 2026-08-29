@@ -21,8 +21,13 @@ from ayllu import SCHEMA_COUNCIL, __version__
 from ayllu import backend as _backend
 from ayllu.converge import synthesize
 from ayllu.estate import catalog
+from ayllu.hatun import status as hatun_status
+from ayllu.invariants import check as check_invariants
 from ayllu.loop import run_turn
 from ayllu.lounge import Lounge
+from ayllu.model_binding import second_brain_binding
+from ayllu.organs import anatomy, organ_for_persona
+from ayllu.ouroboros import tax as ouroboros_tax
 from ayllu.personas import ROSTER, get_persona
 from ayllu.receipts import chain_turns, make_receipt, sha256_json
 
@@ -129,6 +134,7 @@ def health() -> dict[str, Any]:
         "version": __version__,
         "backend": st,
         "lambda": "CONJECTURE_1",
+        "organs": [o["id"] for o in anatomy()["organs"]],
         "origins": catalog()["origins"],
     }
 
@@ -201,6 +207,25 @@ def leaders() -> dict[str, Any]:
             "hash-chained UNSIGNED receipts, and Λ never a theorem."
         ),
     }
+
+
+@app.get("/api/v1/ayllu/anatomy")
+def anatomy_route() -> dict[str, Any]:
+    return anatomy()
+
+
+@app.get("/api/v1/ayllu/second-brain")
+def second_brain_route() -> dict[str, Any]:
+    return second_brain_binding(
+        namespace="ayllu",
+        backend_status=_backend.backend_status(),
+        signer_ready=False,
+    )
+
+
+@app.get("/api/v1/ayllu/hatun")
+def hatun_route() -> dict[str, Any]:
+    return hatun_status()
 
 
 @app.get("/api/v1/ayllu/lounge")
@@ -291,6 +316,10 @@ async def council(request: Request) -> JSONResponse:
     )
     converge = synthesize(prompt, result["rounds"])
     chain = chain_turns(result["rounds"])
+    for turn in result["rounds"]:
+        organ = organ_for_persona(str(turn.get("persona") or ""))
+        turn["organ"] = (organ or {}).get("id")
+        turn["organ_name"] = (organ or {}).get("name")
     payload = {
         "schema": SCHEMA_COUNCIL,
         "id": str(uuid.uuid4()),
@@ -305,8 +334,11 @@ async def council(request: Request) -> JSONResponse:
         "chain_head": chain["head"],
         "authority": "PROPOSAL_ONLY",
         "state": "PROPOSAL_ONLY",
+        "lambda": "CONJECTURE_1",
     }
     receipt = make_receipt(payload)
+    loop = ouroboros_tax(result["mode"], len(result["rounds"]), chain["head"])
+    inv = check_invariants(payload, receipt, chain)
     return JSONResponse({
         "schema": SCHEMA_COUNCIL,
         "prompt": prompt,
@@ -316,6 +348,9 @@ async def council(request: Request) -> JSONResponse:
         "converge": converge,
         "chain": chain,
         "receipt": receipt,
+        "ouroboros": loop,
+        "invariants": inv,
+        "anatomy": anatomy(),
         "honesty": result.get("note"),
         "lambda": "CONJECTURE_1",
     })
