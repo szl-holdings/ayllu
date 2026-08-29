@@ -24,11 +24,15 @@ from ayllu import counsel as _counsel
 from ayllu.converge import synthesize
 from ayllu.estate import catalog
 from ayllu.hatun import status as hatun_status
+from ayllu.invariants import catalog as invariants_catalog
 from ayllu.invariants import check as check_invariants
 from ayllu.loop import run_turn
 from ayllu.lounge import Lounge
 from ayllu.model_binding import second_brain_binding
 from ayllu.organs import anatomy, organ_for_persona
+from ayllu.second_brain import rag_status as second_brain_rag_status
+from ayllu.second_brain import retrieve as second_brain_retrieve
+from ayllu.ouroboros import identity as ouroboros_identity
 from ayllu.ouroboros import tax as ouroboros_tax
 from ayllu.personas import ROSTER, get_persona
 from ayllu.receipts import chain_turns, make_receipt, sha256_json
@@ -235,13 +239,36 @@ def second_brain_route() -> dict[str, Any]:
     return second_brain_binding(
         namespace="ayllu",
         backend_status=_backend.backend_status(),
+        rag_status=second_brain_rag_status(),
         signer_ready=False,
     )
+
+
+@app.get("/api/v1/ayllu/retrieve")
+def retrieve_route(q: str = "", k: int = 6) -> dict[str, Any]:
+    bound_k = max(1, min(int(k or 6), 12))
+    hit = second_brain_retrieve(q or "", k=bound_k)
+    for handle in hit.get("handles") or []:
+        if isinstance(handle, dict):
+            handle.pop("text", None)
+            handle.pop("_toks", None)
+            handle.pop("_tf", None)
+    return hit
 
 
 @app.get("/api/v1/ayllu/hatun")
 def hatun_route() -> dict[str, Any]:
     return hatun_status()
+
+
+@app.get("/api/v1/ayllu/ouroboros")
+def ouroboros_route() -> dict[str, Any]:
+    return ouroboros_identity()
+
+
+@app.get("/api/v1/ayllu/invariants")
+def invariants_route() -> dict[str, Any]:
+    return invariants_catalog()
 
 
 @app.get("/api/v1/ayllu/lounge")

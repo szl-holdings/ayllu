@@ -8,6 +8,40 @@ from typing import Any
 
 from ayllu.receipts import sha256_json
 
+CATALOG = (
+    {"id": "I1", "name": "unsigned_honest", "note": "signed=true with empty signatures is a fabricated claim"},
+    {"id": "I2", "name": "payload_digest_binds", "note": "receipt must carry payload bytes or a digest"},
+    {"id": "I3", "name": "lambda_not_a_theorem", "note": "Λ uniqueness stays Conjecture 1"},
+    {"id": "I4", "name": "proposal_only", "note": "council cannot self-execute"},
+    {"id": "I5", "name": "consensus_not_measured", "note": "no fake swarm IQ"},
+    {"id": "I6", "name": "hash_chain_closed", "note": "turn chain is SOFTWARE, not DSSE"},
+    {"id": "I7", "name": "receipts_in_eq_out", "note": "receipts.in ≡ receipts.out metaphor — chain head is both input and output"},
+    {"id": "I8", "name": "no_fabricated_energy", "note": "no joule invented on this Space"},
+)
+
+
+def catalog() -> dict[str, Any]:
+    """Eight named checks. Last evaluation is UNAVAILABLE without a receipt."""
+    return {
+        "schema": "szl.ayllu.invariants/v1",
+        "source": "https://github.com/szl-holdings/szl-invariants",
+        "kind": "SOFTWARE",
+        "count": 8,
+        "catalog": [dict(item) for item in CATALOG],
+        "last": "UNAVAILABLE",
+        "last_label": "UNAVAILABLE",
+        "ok": None,
+        "passed": None,
+        "failed": None,
+        "results": None,
+        "lambda": "CONJECTURE_1",
+        "honesty": (
+            "Catalog of eight SOFTWARE receipt checks. Last evaluation is UNAVAILABLE "
+            "until a council receipt exists on this request. Not a pass. Not CUDA. "
+            "Not a Λ theorem."
+        ),
+    }
+
 
 def check(payload: dict[str, Any], receipt: dict[str, Any], chain: dict[str, Any]) -> dict[str, Any]:
     results = []
