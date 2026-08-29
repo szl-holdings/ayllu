@@ -77,9 +77,25 @@ def main() -> None:
     chain = chain_turns(res["rounds"])
     assert chain["count"] == 2 and chain["kind"] == "SOFTWARE"
 
+    from ayllu.psyche.engine import Psyche
+    from ayllu.psyche.neural import encode, hopfield_classic, overlap
+    from ayllu.psyche.types import ENERGY, Honesty
+    mind = Psyche()
+    assert mind.graph.snapshot()["counts"]["seats"] == 11
+    blocked = mind.imprint("selftest engram")
+    assert blocked.get("blocked") is True
+    mind.set_lock(True)
+    ok = mind.imprint("selftest engram")
+    assert ok.get("ok") is True
+    x = encode("selftest engram")
+    rec = hopfield_classic(mind.yuyay.W, x)
+    assert overlap(rec["state"], x) >= 0.85
+    assert mind.yuyay.stats()["joules"] is ENERGY
+    assert Honesty.MEASURED.rank() > Honesty.UNAVAILABLE.rank()
+
     print(f"AYLLU SELFTEST OK - {len(ROSTER)} personas; tier router + bounded loop "
           f"honest fallbacks; Lambda-gate fail-closed; lounge honest; backend mode="
-          f"{st['mode']}.")
+          f"{st['mode']}; psyche neural OPERATIONAL.")
 
 
 if __name__ == "__main__":

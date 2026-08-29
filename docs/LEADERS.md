@@ -54,3 +54,10 @@ Chairs light when a seat speaks. A decision card may record remaining dissent.
 Evidence-bound holographic counsel: you can see the seats, you can replay the
 bytes, you cannot mistake SOFTWARE for LIVE, and Λ never graduates to a theorem
 because someone wanted a green badge.
+
+Psyche adds a composition law the field talks about in category language:
+honesty-typed morphisms, fail-closed, associative, with BLOCKED as zero.
+The neural substrate is dual Hopfield plus BCM homeostasis. The type of a
+write is the lock. We own the lattice, the hypergraph of seats, and the
+receipt. Capacity α and Kleiber watts stay MODELED.
+
