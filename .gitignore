@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.a11oy-state/
+*.sqlite3
+.coverage
+dist/
+*.egg-info/
+.hf-token
+.env

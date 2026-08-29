@@ -1,0 +1,24 @@
+{
+  "schema": "szl.hf-docker-space/v1",
+  "source_repository": "szl-holdings/ayllu",
+  "target": "SZLHOLDINGS/ayllu",
+  "sdk": "docker",
+  "app_port": 7860,
+  "files": [
+    "LICENSE",
+    "README.md",
+    "Dockerfile",
+    "requirements.txt",
+    "app.py",
+    "ayllu",
+    "NOTICE",
+    "HONEST_DISCLOSURE.md"
+  ],
+  "smoke_paths": [
+    "/",
+    "/health",
+    "/api/v1/ayllu/roster",
+    "/api/v1/ayllu/manifest"
+  ],
+  "wait_running_seconds": 600
+}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ayllu — holographic counsel</title>
+<meta name="description" content="Ayllu is SZL Holdings' evidence-bound holographic agent counsel. 11 Quechua seats, fail-closed Λ-gate, dissent retained. Λ = Conjecture 1."/>
+<link rel="canonical" href="https://a-11-oy.com/ayllu"/>
+<style>
+:root{
+  --void:#03060c;--panel:rgba(8,16,26,.78);--line:#1b2a38;
+  --teal:#3af4c8;--gold:#e8c074;--cream:#eef3f6;--dim:#8aa0b3;--rose:#ff7a9c;--warn:#e6a23c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--void);color:var(--cream);
+  font:13.5px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+body{overflow:hidden}
+canvas#holo{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:relative;z-index:2;display:grid;grid-template-columns:280px 1fr 340px;
+  grid-template-rows:auto 1fr auto;height:100vh;gap:0;pointer-events:none}
+.hud > *{pointer-events:auto}
+.top{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 18px;background:linear-gradient(180deg,rgba(3,6,12,.9),transparent);flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{margin:0;font-size:20px;letter-spacing:.4px;color:var(--teal)}
+.brand .sub{color:var(--gold);font:11px ui-monospace,monospace;letter-spacing:1.1px;text-transform:uppercase}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{color:var(--teal);text-decoration:none;border:1px solid var(--line);border-radius:999px;
+  padding:4px 10px;font:11px ui-monospace,monospace}
+.links a:hover{border-color:var(--teal)}
+.badge{font:10.5px ui-monospace,monospace;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+.badge.live{color:#7dffb0;border-color:#1c5;background:#0a2a17}
+.badge.software{color:var(--warn);border-color:#a83;background:#2a2109}
+.left,.right{margin:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:12px;overflow:auto;backdrop-filter:blur(8px)}
+.center{display:flex;flex-direction:column;justify-content:flex-end;padding:0 12px 12px;min-width:0}
+h2{margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.seat{display:flex;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid #13202c;cursor:pointer}
+.seat:hover{background:rgba(58,244,200,.05)}
+.dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 8px currentColor;flex:none}
+.seat b{font-size:12px}
+.seat span{color:var(--dim);font-size:11px;margin-left:auto}
+.prompt{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:10px;backdrop-filter:blur(8px)}
+textarea,select,button,input{font:inherit}
+textarea{width:100%;min-height:64px;resize:vertical;background:#070e16;color:var(--cream);
+  border:1px solid var(--line);border-radius:8px;padding:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{background:var(--teal);color:#04140f;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+button.ghost{background:transparent;color:var(--teal);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:wait}
+.turn{border:1px solid var(--line);border-radius:8px;padding:8px;margin:0 0 8px;background:#071018}
+.turn .meta{color:var(--dim);font:11px ui-monospace,monospace}
+.ans{white-space:pre-wrap;margin-top:6px;font-size:12.5px}
+.law,.note{color:var(--dim);font-size:11.5px;margin-top:8px}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.kpi div{background:#071018;border:1px solid var(--line);border-radius:8px;padding:8px}
+.kpi b{display:block;font-size:16px;color:var(--teal)}
+.estate a{display:block;color:var(--teal);text-decoration:none;font-size:12px;padding:3px 0}
+.noscript{position:relative;z-index:3;padding:24px;max-width:46rem;margin:40px auto;background:#071018;border:1px solid var(--line);border-radius:12px}
+@media (max-width:960px){
+  body{overflow:auto}
+  .hud{display:flex;flex-direction:column;height:auto;min-height:100vh}
+  canvas#holo{position:sticky;top:0;height:42vh}
+  .left,.right,.center{margin:8px}
+}
+</style>
+</head>
+<body>
+<canvas id="holo" aria-hidden="true"></canvas>
+<noscript>
+  <div class="noscript">
+    <h1>Ayllu</h1>
+    <p>Holographic counsel requires JavaScript for the chamber. The API is still live:</p>
+    <ul>
+      <li><a href="/api/v1/ayllu/roster">roster</a></li>
+      <li><a href="/api/v1/ayllu/manifest">manifest</a></li>
+      <li><a href="/api/v1/ayllu/estate">estate catalog</a></li>
+      <li><a href="/api/v1/ayllu/leaders">leaders studied</a></li>
+    </ul>
+    <p>Λ = Conjecture 1 · 0 runtime CDN · Apache-2.0</p>
+  </div>
+</noscript>
+<div class="hud">
+  <header class="top">
+    <div class="brand">
+      <h1>Ayllu</h1>
+      <div class="sub">evidence-bound holographic counsel</div>
+      <span id="mode" class="badge">…</span>
+    </div>
+    <nav class="links" aria-label="origins">
+      <a href="https://a-11-oy.com">a-11-oy.com</a>
+      <a href="https://a11oy.net">a11oy.net</a>
+      <a href="https://github.com/szl-holdings/ayllu">GitHub</a>
+      <a href="https://huggingface.co/spaces/SZLHOLDINGS/ayllu">HF Space</a>
+      <a href="/api/v1/ayllu/manifest">contract</a>
+    </nav>
+  </header>
+  <aside class="left">
+    <h2>Eleven seats</h2>
+    <div class="kpi">
+      <div><b id="k-seats">11</b>personas</div>
+      <div><b id="k-mode">—</b>backend</div>
+      <div><b>NOT_MEASURED</b>consensus</div>
+      <div><b>Conjecture 1</b>Λ uniqueness</div>
+    </div>
+    <div id="roster"></div>
+    <p class="law">Roles on one routed backend — not eleven models. State-changing actions need two-person attestation. The tribe's "always execute" mandate is not in force.</p>
+  </aside>
+  <section class="center">
+    <form class="prompt" id="form">
+      <div class="row">
+        <label class="law"><input type="checkbox" id="debate"/> debate (exactly two rounds)</label>
+        <span class="law">fan-out cap 5 · debate cap 3</span>
+      </div>
+      <textarea id="q" placeholder="Ask the kinship table. Honest dissent beats false consensus."></textarea>
+      <div class="row">
+        <button type="submit" id="convene">Convene council</button>
+        <button type="button" class="ghost" id="askone">Ask selected seat</button>
+        <select id="who" aria-label="Seat"></select>
+      </div>
+    </form>
+  </section>
+  <aside class="right">
+    <h2>Transcript + receipt</h2>
+    <div id="out"></div>
+    <h2>What this consolidates</h2>
+    <div class="estate" id="estate"></div>
+    <p class="note">Leaders studied, none copied: Unanimous Hyperchat, Multiagent Debate, 3D LLM councils, AutoGen/CrewAI/CAMEL, EvoTavern Council. We kept receipts, fail-closed law, and dissent. See <a href="/api/v1/ayllu/leaders" style="color:var(--teal)">leaders JSON</a>.</p>
+  </aside>
+</div>
+<script>
+const api = p => "/api/v1/ayllu/"+p;
+const esc = s => String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const seats = [];
+const COLORS = ["#e8c074","#ff9a4a","#3af4c8","#b38bff","#7ad7ff","#7dffb0","#6ea8ff","#e8c074","#eef3f6","#ff7a9c","#c9d6e2"];
+let speaking = null;
+let dissentPairs = [];
+let rot = 0.2;
+
+async function j(url, opts){
+  try{
+    const r = await fetch(url, opts);
+    let d = {};
+    try{ d = await r.json(); }catch(e){}
+    return {ok:r.ok, status:r.status, data:d};
+  }catch(e){ return {ok:false, status:"network", data:{error:"unavailable"}}; }
+}
+
+function hueColor(i){ return COLORS[i % COLORS.length]; }
+
+function renderRoster(roster, status){
+  const box = document.getElementById("roster");
+  const sel = document.getElementById("who");
+  box.innerHTML = "";
+  sel.innerHTML = "";
+  seats.length = 0;
+  (roster||[]).forEach((p,i)=>{
+    seats.push({...p, color: hueColor(i), angle: (i/11)*Math.PI*2 - Math.PI/2});
+    const row = document.createElement("div");
+    row.className = "seat";
+    row.innerHTML = `<span class="dot" style="color:${hueColor(i)};background:${hueColor(i)}"></span><b>${esc(p.name)}</b><span>${esc(p.quechua)}</span>`;
+    row.onclick = () => { sel.value = p.name; };
+    box.appendChild(row);
+    const o = document.createElement("option");
+    o.value = p.name; o.textContent = p.name+" — "+p.archetype;
+    sel.appendChild(o);
+  });
+  const mode = (status&&status.mode) || "software";
+  const badge = document.getElementById("mode");
+  badge.textContent = mode.toUpperCase();
+  badge.className = "badge "+(mode==="live"?"live":"software");
+  document.getElementById("k-seats").textContent = String((roster||[]).length||11);
+  document.getElementById("k-mode").textContent = mode;
+}
+
+function renderTurns(payload){
+  const out = document.getElementById("out");
+  const rounds = payload.rounds || payload.turns || (payload.answer ? [payload] : []);
+  const syn = payload.converge || {};
+  dissentPairs = [];
+  let html = "";
+  if (payload.honesty) html += `<div class="note">${esc(payload.honesty)}</div>`;
+  if (syn.semantic_consensus) html += `<div class="note">consensus: ${esc(syn.semantic_consensus)} · dissent markers: ${(syn.lexical_dissent||[]).length}</div>`;
+  rounds.forEach(t=>{
+    if (t.speaking) speaking = t.persona;
+    html += `<div class="turn"><div class="meta">${esc(t.persona)} · r${esc(t.round||1)} · ${esc(t.model||"")} · ${t.stub?"SOFTWARE":"LIVE"}</div><div class="ans">${esc(t.answer||t.honesty||"")}</div></div>`;
+  });
+  if (payload.receipt) html += `<div class="note">receipt signed=${esc(payload.receipt.signed)} · ${esc(payload.receipt.honesty||"")}</div>`;
+  if (payload.chain) html += `<div class="note">turn chain head ${esc((payload.chain.head||"").slice(0,16))}… (${payload.chain.count})</div>`;
+  out.innerHTML = html || "<div class='note'>No turns yet. Convene the table.</div>";
+  (syn.lexical_dissent||[]).forEach(d=>{
+    dissentPairs.push(d.persona);
+  });
+}
+
+function renderEstate(cat){
+  const box = document.getElementById("estate");
+  box.innerHTML = (cat.consolidated||[]).map(x=>
+    `<a href="${esc((x.urls&&x.urls[0])||'#')}" target="_blank" rel="noopener">${esc(x.name)}</a>`
+  ).join("");
+}
+
+/* 0-CDN holographic chamber: projected 3D, additive glow, khipu torus knot. */
+const cv = document.getElementById("holo");
+const ctx = cv.getContext("2d");
+const particles = Array.from({length:90},()=>({
+  a: Math.random()*Math.PI*2,
+  y: (Math.random()-0.5)*2.4,
+  r: 1.6+Math.random()*1.4,
+  s: 0.002+Math.random()*0.006
+}));
+
+function resize(){
+  cv.width = innerWidth * devicePixelRatio;
+  cv.height = innerHeight * devicePixelRatio;
+}
+addEventListener("resize", resize); resize();
+
+function knot(t, R, r, p, q){
+  return [
+    (R + r*Math.cos(q*t))*Math.cos(p*t),
+    r*Math.sin(q*t)*0.85,
+    (R + r*Math.cos(q*t))*Math.sin(p*t)
+  ];
+}
+function proj(x,y,z,w,h){
+  const c = Math.cos(rot), s = Math.sin(rot);
+  const x2 = x*c - z*s, z2 = x*s + z*c;
+  const f = 2.6/(4.2+z2);
+  return [w*0.5 + x2*f*w*0.22, h*0.48 + y*f*h*0.28, f, z2];
+}
+
+function frame(){
+  const w = cv.width, h = cv.height;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle = "#03060c";
+  ctx.fillRect(0,0,w,h);
+  const g = ctx.createRadialGradient(w*0.5,h*0.48,20,w*0.5,h*0.5,Math.max(w,h)*0.55);
+  g.addColorStop(0,"rgba(58,244,200,.08)");
+  g.addColorStop(0.45,"rgba(232,192,116,.04)");
+  g.addColorStop(1,"rgba(3,6,12,0)");
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+  rot += 0.0032;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  particles.forEach(p=>{
+    p.a += p.s;
+    const x = Math.cos(p.a)*p.r, z = Math.sin(p.a)*p.r;
+    const q = proj(x,p.y,z,w,h);
+    ctx.fillStyle = "rgba(58,244,200,.18)";
+    ctx.beginPath(); ctx.arc(q[0], q[1], 1.2*q[2]*devicePixelRatio, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.lineWidth = 2*devicePixelRatio;
+  ctx.strokeStyle = "rgba(232,192,116,.55)";
+  ctx.beginPath();
+  for(let i=0;i<=240;i++){
+    const t = i/240 * Math.PI*2;
+    const k = knot(t, 0.72, 0.28, 3, 2);
+    const q = proj(k[0], k[1], k[2], w, h);
+    if(i===0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+  }
+  ctx.stroke();
+  seats.forEach((seat,i)=>{
+    const R = 1.85;
+    const x = Math.cos(seat.angle+rot*0.15)*R;
+    const z = Math.sin(seat.angle+rot*0.15)*R;
+    const q = proj(x, 0.05, z, w, h);
+    const active = speaking && speaking.toLowerCase()===String(seat.name).toLowerCase();
+    const r = (active?16:9)*q[2]*devicePixelRatio;
+    ctx.fillStyle = seat.color;
+    ctx.globalAlpha = active?0.95:0.55;
+    ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.font = `${11*devicePixelRatio}px ui-sans-serif`;
+    ctx.fillStyle = "#eef3f6";
+    ctx.textAlign = "center";
+    ctx.fillText(seat.name, q[0], q[1]+22*devicePixelRatio);
+    if (dissentPairs.includes(seat.name)){
+      const c = proj(0,0,0,w,h);
+      ctx.strokeStyle = "rgba(255,122,156,.35)";
+      ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(c[0], c[1]); ctx.stroke();
+    }
+  });
+  ctx.restore();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+document.getElementById("form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = document.getElementById("convene");
+  btn.disabled = true; speaking = "Kamachiq";
+  const body = {
+    prompt: document.getElementById("q").value,
+    debate: document.getElementById("debate").checked
+  };
+  const r = await j(api("council"), {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body)});
+  speaking = null;
+  renderTurns(r.data);
+  btn.disabled = false;
+});
+document.getElementById("askone").addEventListener("click", async ()=>{
+  const btn = document.getElementById("askone");
+  btn.disabled = true;
+  speaking = document.getElementById("who").value;
+  const r = await j(api("ask"), {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({
+    persona: speaking, prompt: document.getElementById("q").value
+  })});
+  speaking = null;
+  renderTurns(r.data.turn ? {rounds:[r.data.turn], receipt:r.data.receipt, honesty:r.data.honesty} : r.data);
+  btn.disabled = false;
+});
+
+(async function boot(){
+  const [roster, estate, health] = await Promise.all([
+    j(api("roster")), j(api("estate")), j("/health")
+  ]);
+  renderRoster((roster.data.personas||roster.data.roster||[]), roster.data.backend || health.data);
+  renderEstate(estate.data);
+})();
+</script>
+</body>
+</html>
