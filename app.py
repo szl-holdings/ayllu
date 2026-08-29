@@ -2,6 +2,7 @@
 
 Holographic chamber at GET /
 Legal Matter Command at GET /counsel
+Psyche (neural-symbolic) at GET /psyche
 Evidence-bound council at POST /api/v1/ayllu/council
 Honesty labels: LIVE / SOFTWARE / UNSIGNED / NOT_MEASURED / CONJECTURE_1
 """
@@ -35,10 +36,12 @@ from ayllu.second_brain import retrieve as second_brain_retrieve
 from ayllu.ouroboros import identity as ouroboros_identity
 from ayllu.ouroboros import tax as ouroboros_tax
 from ayllu.personas import ROSTER, get_persona
+from ayllu.psyche.engine import PSYCHE
 from ayllu.receipts import chain_turns, make_receipt, sha256_json
 
 CHAMBER = Path(__file__).resolve().parent / "ayllu" / "static" / "chamber.html"
 COUNSEL_HTML = Path(__file__).resolve().parent / "ayllu" / "static" / "counsel.html"
+PSYCHE_HTML = Path(__file__).resolve().parent / "ayllu" / "static" / "psyche.html"
 MAX_PROMPT_CHARS = 6000
 MAX_BODY_BYTES = 24 * 1024
 COUNCIL_MAX = 5
@@ -51,7 +54,7 @@ NS = "ayllu"
 app = FastAPI(
     title="Ayllu Counsel",
     version=__version__,
-    description="Evidence-bound holographic agent counsel + Legal Matter Command. Λ = Conjecture 1.",
+    description="Evidence-bound holographic agent counsel + Legal Matter Command + Psyche. Λ = Conjecture 1.",
 )
 _LOUNGE = Lounge()
 
@@ -81,6 +84,7 @@ class _RateBucket:
 _ASK_BUCKET = _RateBucket(30, 60.0)
 _COUNCIL_BUCKET = _RateBucket(8, 60.0)
 _COUNSEL_BUCKET = _RateBucket(20, 60.0)
+_PSYCHE_BUCKET = _RateBucket(40, 60.0)
 
 
 async def _bounded_json_body(request: Request) -> dict[str, Any]:
@@ -144,6 +148,7 @@ def health() -> dict[str, Any]:
         "lambda": "CONJECTURE_1",
         "organs": [o["id"] for o in anatomy()["organs"]],
         "counsel": "operational",
+        "psyche": "operational",
         "origins": catalog()["origins"],
     }
 
@@ -161,6 +166,11 @@ def chamber_alias() -> HTMLResponse:
 @app.get("/counsel", response_class=HTMLResponse)
 def counsel_surface() -> HTMLResponse:
     return HTMLResponse(COUNSEL_HTML.read_text(encoding="utf-8"))
+
+
+@app.get("/psyche", response_class=HTMLResponse)
+def psyche_surface() -> HTMLResponse:
+    return HTMLResponse(PSYCHE_HTML.read_text(encoding="utf-8"))
 
 
 @app.get("/api/v1/ayllu/roster")
@@ -202,6 +212,15 @@ def manifest() -> dict[str, Any]:
             "docket": "/api/v1/counsel/docket",
             "infer": "/api/v1/counsel/infer",
             "honesty": "Continuance of retired Counsel. Not a deletion of the eleven seats.",
+        },
+        "psyche": {
+            "surface": "/psyche",
+            "health": "/api/v1/psyche/health",
+            "imprint": "/api/v1/psyche/imprint",
+            "recall": "/api/v1/psyche/recall",
+            "replay": "/api/v1/psyche/replay",
+            "compose": "/api/v1/psyche/compose",
+            "honesty": "Neural-symbolic psyche. Dual Hopfield, fail-closed morphisms, typed hypergraph. Joules null.",
         },
         "product_origin": "https://a-11-oy.com",
         "proof_origin": "https://a11oy.net",
@@ -341,6 +360,110 @@ async def counsel_infer(request: Request) -> JSONResponse:
         context=context,
     )
     return JSONResponse(result)
+
+
+@app.get("/api/v1/psyche/health")
+def psyche_health() -> dict[str, Any]:
+    return PSYCHE.health()
+
+
+@app.get("/api/v1/psyche/snapshot")
+def psyche_snapshot() -> dict[str, Any]:
+    return PSYCHE.snapshot()
+
+
+@app.get("/api/v1/psyche/graph")
+def psyche_graph() -> dict[str, Any]:
+    return PSYCHE.graph.snapshot()
+
+
+@app.post("/api/v1/psyche/lock")
+async def psyche_lock(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    engaged = bool(body.get("engaged") or body.get("human_lock") or body.get("humanLock") or body.get("lock"))
+    return JSONResponse(PSYCHE.set_lock(engaged))
+
+
+@app.post("/api/v1/psyche/imprint")
+async def psyche_imprint(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        text = _clip_prompt(body.get("text") or body.get("prompt") or body.get("q") or "")
+        source = str(body.get("source") or "pulse")[:80]
+        honesty = str(body.get("honesty") or "MEASURED")
+        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
+            PSYCHE.set_lock(True)
+        if body.get("human_lock") is False or body.get("humanLock") is False:
+            # explicit false leaves lock as-is unless they also sent engaged
+            pass
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.imprint(text, source=source, honesty=honesty))
+
+
+@app.post("/api/v1/psyche/recall")
+async def psyche_recall(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
+        seat = str(body.get("seat") or body.get("persona") or "Maskaq")
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.recall(cue, seat=seat))
+
+
+@app.post("/api/v1/psyche/replay")
+async def psyche_replay(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        rounds = int(body.get("rounds") or 24)
+        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
+            PSYCHE.set_lock(True)
+    except _BodyTooLarge as exc:
+        return JSONResponse({"error": str(exc)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.replay(rounds))
+
+
+@app.post("/api/v1/psyche/compose")
+async def psyche_compose(request: Request) -> JSONResponse:
+    ok, retry = _PSYCHE_BUCKET.check()
+    if not ok:
+        return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
+    try:
+        body = await _bounded_json_body(request)
+        cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
+        seat = str(body.get("seat") or body.get("persona") or "Amaru")
+        imprint = bool(body.get("imprint"))
+        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
+            PSYCHE.set_lock(True)
+    except _BodyTooLarge as ext:
+        return JSONResponse({"error": str(ext)}, status_code=413)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(PSYCHE.compose_turn(cue, seat=seat, imprint=imprint))
 
 
 @app.post("/api/v1/ayllu/ask")

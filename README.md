@@ -7,7 +7,7 @@ sdk: docker
 app_port: 7860
 pinned: false
 license: apache-2.0
-short_description: Legal Matter Command. 11 seats. grok-4.5. Conjecture 1.
+short_description: Legal Matter Command. 11 seats. Psyche neural. Conjecture 1.
 tags:
   - agent-council
   - holographic
@@ -15,6 +15,7 @@ tags:
   - fail-closed
   - quechua
   - legal
+  - neural-symbolic
 ---
 
 # Ayllu Counsel
@@ -22,7 +23,9 @@ tags:
 **Ayllu** (Quechua): a self-governing kinship community. This is SZL Holdings'
 evidence-bound holographic agent counsel — eleven named seats around a khipu
 knot, fail-closed Λ-gate, debate-then-converge, UNSIGNED-honest receipts —
-plus **Legal Matter Command**, the live continuance of retired Counsel.
+plus **Legal Matter Command**, the live continuance of retired Counsel, plus
+**Psyche**: a stdlib neural-symbolic architecture (Yuyay associative memory,
+Tinku fail-closed morphisms, typed hypergraph of eleven seats).
 
 - Product origin: [a-11-oy.com](https://a-11-oy.com)
 - Proof origin: [a11oy.net](https://a11oy.net)
@@ -40,6 +43,12 @@ This organ is the continuance. The eleven seats are not deleted.
 |---|---|
 | `GET /` | 0-CDN holographic council chamber |
 | `GET /counsel` | Legal Matter Command — live docket, Allodial, grok-4.5, Human Lock |
+| `GET /psyche` | Neural-symbolic psyche — imprint, dual Hopfield recall, replay, Tinku compose |
+| `GET /api/v1/psyche/health` | OPERATIONAL neural + 11 seats + lock |
+| `POST /api/v1/psyche/imprint` | Hebb+Oja+BCM write. Fail-closed Human Lock. UNAVAILABLE cannot write |
+| `POST /api/v1/psyche/recall` | Dual Hopfield (classic + softmax) + seat morphism |
+| `POST /api/v1/psyche/replay` | Reverse-Hebb unlearning. MEASURED fidelity / ghost rate |
+| `POST /api/v1/psyche/compose` | Tinku pulse: encode → recall → seat → optional imprint |
 | `GET /api/v1/ayllu/roster` | 11 personas + honest backend mode |
 | `POST /api/v1/ayllu/ask` | one seat, bounded, receipted |
 | `POST /api/v1/ayllu/council` | capped fan-out; optional 2-round debate |

@@ -1,7 +1,7 @@
 [project]
 name = "ayllu"
-version = "1.0.0"
-description = "Ayllu Counsel — evidence-bound holographic agent council"
+version = "1.4.0"
+description = "Ayllu Counsel — evidence-bound holographic agent council + psyche"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.11"

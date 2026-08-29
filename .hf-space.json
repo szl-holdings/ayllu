@@ -17,10 +17,12 @@
   "smoke_paths": [
     "/",
     "/counsel",
+    "/psyche",
     "/health",
     "/api/v1/ayllu/roster",
     "/api/v1/ayllu/manifest",
-    "/api/v1/counsel/allodial"
+    "/api/v1/counsel/allodial",
+    "/api/v1/psyche/health"
   ],
   "wait_running_seconds": 600
 }
