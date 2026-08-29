@@ -7,7 +7,7 @@ sdk: docker
 app_port: 7860
 pinned: false
 license: apache-2.0
-short_description: Holographic counsel + Legal Matter Command. 11 seats. grok-4.5. Conjecture 1.
+short_description: Legal Matter Command. 11 seats. grok-4.5. Conjecture 1.
 tags:
   - agent-council
   - holographic
