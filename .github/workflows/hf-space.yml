@@ -22,9 +22,9 @@ jobs:
           if not token:
               print("HF_TOKEN UNAVAILABLE — Space publish skipped. Not fabricated LIVE.")
               sys.exit(0)
-          from huggingface_hub import HfApi, create_repo
+          from huggingface_hub import HfApi
           api = HfApi(token=token)
-          create_repo("SZLHOLDINGS/ayllu", repo_type="space", space_sdk="docker", exist_ok=True, token=token)
+          # Space already exists. create_repo hits Hub space-creation rate limit (20/day).
           api.upload_folder(
               folder_path=".",
               repo_id="SZLHOLDINGS/ayllu",
