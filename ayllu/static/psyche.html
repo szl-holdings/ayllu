@@ -76,7 +76,8 @@ canvas#graph{width:100%;height:280px;display:block;background:#071018;border-rad
     <div class="kpi"><b id="k-sync">—</b><span>sync R MODELED</span></div>
     <div class="kpi"><b id="k-close">—</b><span>closure MEASURED</span></div>
     <div class="kpi"><b id="k-ignite">—</b><span>ignition MEASURED</span></div>
-    <div class="kpi"><b id="k-joules">null</b><span>joules · presence CONJECTURE</span></div>
+    <div class="kpi"><b id="k-huklla">—</b><span>Huklla H MODELED · not Φ</span></div>
+    <div class="kpi"><b id="k-joules">null</b><span>joules · φ_s UNAVAILABLE · presence CONJECTURE</span></div>
   </div>
   <div class="grid">
     <section class="card">
@@ -249,9 +250,10 @@ document.getElementById("pulse").onclick = async () => {
   const w = d.winay || {};
   document.getElementById("k-close").textContent = w.closure ? (w.closure.value ? "closed" : "open") : "—";
   document.getElementById("k-ignite").textContent = w.ignition ? (w.ignition.value ? "bound" : "dark") : "—";
+  document.getElementById("k-huklla").textContent = w.huklla && w.huklla.H != null ? Number(w.huklla.H).toFixed(3) : "—";
   const organs = (d.organs||[]).map(o => o.id+":"+o.decision).join(" → ");
   document.getElementById("beatout").textContent =
-    "pulse "+(d.pulse||0)+" · "+organs+" · C "+(w.closure && w.closure.value ? "closed" : "open")+" · I "+(w.ignition && w.ignition.value ? "bound" : "dark")+" · presence CONJECTURE · AGI CONJECTURE · joules null";
+    "pulse "+(d.pulse||0)+" · "+organs+" · C "+(w.closure && w.closure.value ? "closed" : "open")+" · I "+(w.ignition && w.ignition.value ? "bound" : "dark")+" · H "+(w.huklla && w.huklla.H != null ? Number(w.huklla.H).toFixed(3) : "—")+" · D "+(w.imaymana && w.imaymana.D != null ? Number(w.imaymana.D).toFixed(3) : "—")+" · φ_s UNAVAILABLE · presence CONJECTURE · AGI CONJECTURE · joules null";
   if (ws.handles && ws.handles.length){
     renderHits({ranked: ws.handles.map(h => ({text: h.label, source: h.nodeId, weight: 0, honesty: "SOFTWARE"}))});
   }

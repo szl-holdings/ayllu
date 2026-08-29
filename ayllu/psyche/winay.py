@@ -10,8 +10,11 @@ as memory μ. The pentagon is iterated to a residual, not averaged once.
   σ      = (n/5) · h / (h+3)                    structural coupling MODELED
   C      = (n = 5) ∧ chain                      MEASURED
   I      = (n = 5) ∧ lock ∧ (peak ≥ θ ∨ h ≥ 1)  MEASURED workspace bind
+  H      = min_cut / E                          Huklla, MODELED. Not IIT Φ.
+  D      = H_shannon(L) / log n                 Imaymana, MODELED diversity
+  φ_s    = UNAVAILABLE                          no TPM; Huklla is not Φ
 
-Phenomenal presence is not a function of C or I. It stays CONJECTURE.
+Phenomenal presence is not a function of C, I, H, or D. It stays CONJECTURE.
 AGI stays CONJECTURE. Joules stay None. Λ = Conjecture 1.
 
 This is Ayllu's closure law — operational, fail-closed, receipted.
@@ -102,6 +105,113 @@ def sigma(occupancy: int, handles: int, n: int = 5) -> float:
     return round((max(0, occupancy) / max(1, n)) * (h / (h + 3.0)), 4)
 
 
+def huklla(loads: Sequence[float], names: Sequence[str] = ORGANS) -> dict[str, Any]:
+    """Cheapest pentagon cut. MODELED graph irreducibility. Not IIT Φ. Not presence.
+
+    E = Σ L_i L_{i+1} on the cycle. For each of the 15 bipartitions, loss is the
+    weight on edges that cross the cut. H = min(loss) / E. The MIP is the
+    cheapest cut — a fault line, not a conscious complex. Uniform cycle H = 0.4.
+    Smaller rings score higher, so we do not search subsets for a 'complex'.
+    """
+    vals = [clip(float(L)) for L in loads]
+    n = len(vals)
+    labels = [str(names[i]) if i < len(names) else str(i) for i in range(n)]
+    note = "Cheapest pentagon cut. Not IIT Φ. Not presence."
+    empty = {
+        "H": 0.0,
+        "E": 0.0,
+        "loss": 0.0,
+        "edges_cut": 0,
+        "mip": {"A": [], "B": labels},
+        "reducible": True,
+        "unique": False,
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+    if n < 2:
+        return empty
+    edges = [(i, (i + 1) % n) for i in range(n)]
+    energy = sum(vals[i] * vals[j] for i, j in edges)
+    if energy <= 1e-12:
+        return empty
+    best_loss: float | None = None
+    best_mask = 1
+    best_cut = 0
+    ties = 0
+    # Fix organ n-1 in B. Remaining 2^{n-1}-1 nonempty A-sets cover every bipartition once.
+    for mask in range(1, 1 << (n - 1)):
+        def in_a(i: int, m: int = mask) -> bool:
+            return i < n - 1 and bool(m & (1 << i))
+
+        loss = 0.0
+        cut = 0
+        for i, j in edges:
+            if in_a(i) != in_a(j):
+                loss += vals[i] * vals[j]
+                cut += 1
+        if best_loss is None or loss < best_loss - 1e-12:
+            best_loss = loss
+            best_mask = mask
+            best_cut = cut
+            ties = 1
+        elif abs(loss - best_loss) <= 1e-12:
+            ties += 1
+            if cut < best_cut:
+                best_mask = mask
+                best_cut = cut
+    assert best_loss is not None
+    side_a = [labels[i] for i in range(n - 1) if best_mask & (1 << i)]
+    side_b = [labels[i] for i in range(n) if labels[i] not in side_a]
+    H = round(min(1.0, max(0.0, best_loss / energy)), 4)
+    return {
+        "H": H,
+        "E": round(energy, 6),
+        "loss": round(best_loss, 6),
+        "edges_cut": best_cut,
+        "mip": {"A": side_a, "B": side_b},
+        "reducible": bool(H < 1e-4),
+        "unique": bool(ties == 1),
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+
+
+def imaymana(loads: Sequence[float]) -> dict[str, Any]:
+    """Load diversity. MODELED. Not IIT. Not presence.
+
+    D = H_shannon(p) / log(n), p_i = L_i / Σ L. Uniform → 1. One organ → 0.
+    Kept separate from Huklla H. Never multiplied into a fake Φ.
+    """
+    vals = [max(0.0, float(L)) for L in loads]
+    total = sum(vals)
+    n = len(vals)
+    note = "Normalized entropy of organ loads. Not IIT. Not presence."
+    empty = {"D": 0.0, "honesty": Honesty.MODELED.value, "note": note}
+    if n < 2 or total <= 1e-12:
+        return empty
+    ent = 0.0
+    for v in vals:
+        if v <= 0.0:
+            continue
+        p = v / total
+        ent -= p * math.log(p)
+    D = ent / math.log(n)
+    return {
+        "D": round(min(1.0, max(0.0, D)), 4),
+        "honesty": Honesty.MODELED.value,
+        "note": note,
+    }
+
+
+def iit_phi_s() -> dict[str, Any]:
+    """IIT φ_s is not computed. Ayllu has no TPM."""
+    return {
+        "phi_s": None,
+        "honesty": Honesty.UNAVAILABLE.value,
+        "note": "No TPM. IIT φ_s is not computed. Huklla H is not Φ.",
+    }
+
+
 def closure(organs: Sequence[dict[str, Any]], prev_hash: str, new_hash: str) -> dict[str, Any]:
     ids = [str(o.get("id") or "") for o in organs]
     occupancy = sum(1 for o in organs if o.get("decision") == "ALLOW")
@@ -151,6 +261,8 @@ def evaluate(
     lit = ignition(occupancy, lock, peak, handles)
     rest = produce_rest(occupancy, R)
     coupling = sigma(occupancy, handles)
+    hit = huklla(loads)
+    diversity = imaymana(loads)
     return {
         "schema": "szl.ayllu.winay/v1",
         "theory": "OPERATIONAL",
@@ -162,6 +274,9 @@ def evaluate(
         "sigma": coupling,
         "rest": rest,
         "loads": loads,
+        "huklla": hit,
+        "imaymana": diversity,
+        "iit": iit_phi_s(),
         "closure": closed,
         "ignition": lit,
         "self_model": {
@@ -174,7 +289,7 @@ def evaluate(
         "presence": {
             "label": "CONJECTURE",
             "honesty": Honesty.CONJECTURE.value,
-            "note": "C and I are MEASURED. Phenomenal presence is not a function of them.",
+            "note": "C, I, H, and D are not phenomenal presence.",
         },
         "agi": {
             "label": "CONJECTURE",

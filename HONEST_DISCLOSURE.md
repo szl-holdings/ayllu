@@ -19,6 +19,11 @@
 | Physical effectors | Not in this product |
 | Eleven separately trained models | False. Roles on one routed backend |
 | Second-brain index | SOFTWARE lexical rank over the public 575-chunk projection when present. Handles only. Never LIVE retrieval. Private 9464-node graph is not admitted to gradients. |
+| Wiñay closure C / ignition I | MEASURED on the five-organ beat. Not phenomenal presence. |
+| Huklla H | MODELED cheapest pentagon cut. Not IIT Φ. Not a conscious complex. |
+| Imaymana D | MODELED load entropy. Not IIT. Never multiplied with H into a fake Φ. |
+| IIT φ_s | UNAVAILABLE. No TPM. Huklla is not Φ. |
+| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, or D. |
 
 This product is the split-out of the a11oy `/ayllu` organ. a11oy still hosts
 the organ. This repository is the canonical Python product and hologram.

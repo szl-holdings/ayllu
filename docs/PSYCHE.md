@@ -36,7 +36,7 @@ Energy in Hopfield is a Lyapunov number, not a joule.
 - `POST /api/v1/psyche/beat` — five-organ Kawsay pulse. Occupancy MEASURED. Presence CONJECTURE. AGI CONJECTURE.
 - `POST /api/v1/psyche/sense` — second-brain handles. SOFTWARE, HANDLES_ONLY, never LIVE.
 - `POST /api/v1/psyche/graft` — imprint Yachay handles into Yuyay. Human Lock required.
-- `GET /api/v1/psyche/winay` — last autopoietic closure. OPERATIONAL. Presence CONJECTURE.
+- `GET /api/v1/psyche/winay` — last autopoietic closure. OPERATIONAL. Huklla H MODELED (not Φ). Presence CONJECTURE.
 
 ## Kawsay
 
@@ -50,5 +50,21 @@ adjacency). Rest is produced from occupancy and R, and stays under the glow
 floor. Closure C (five ALLOW + hash chain) is MEASURED. Ignition I (workspace
 bound under lock) is MEASURED. Structural coupling σ is MODELED.
 
-Phenomenal presence is not a function of C or I. Presence stays CONJECTURE.
+## Huklla (cheapest pentagon cut)
+
+Huklla H is Ayllu's irreducibility analog. E = Σ L_i L_{i+1} on the organ
+cycle. For each of the 15 bipartitions of five organs, loss is the weight on
+edges that cross the cut. H = min(loss) / E. Uniform loads give H = 0.4. A
+silent organ gives H = 0 (a free cut — the body is reducible). The MIP is a
+fault line, not a conscious complex.
+
+Huklla is MODELED. It is not IIT Φ. Ayllu has no transition probability
+matrix, so IIT φ_s is UNAVAILABLE. We do not search subsets for a maximum-H
+"complex": a 4-cycle scores higher than a 5-cycle on this ratio, so max-H
+would pick the wrong object. Smaller rings are cheaper to over-score.
+
+Imaymana D is normalized Shannon entropy of organ loads (uniform → 1, one
+organ → 0). MODELED. Kept separate from H. Never multiplied into a fake Φ.
+
+Phenomenal presence is not a function of C, I, H, or D. Presence stays CONJECTURE.
 AGI stays CONJECTURE. Joules stay `null`. Λ = Conjecture 1.
