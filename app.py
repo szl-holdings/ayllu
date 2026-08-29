@@ -138,6 +138,7 @@ def _personas(names: list[str] | None) -> list:
 
 
 @app.get("/health")
+@app.get("/healthz")
 def health() -> dict[str, Any]:
     st = _backend.backend_status()
     return {
@@ -146,6 +147,9 @@ def health() -> dict[str, Any]:
         "version": __version__,
         "backend": st,
         "lambda": "CONJECTURE_1",
+        "lambda_status": "Conjecture 1",
+        "energy": None,
+        "signer": "UNSIGNED-honest",
         "organs": [o["id"] for o in anatomy()["organs"]],
         "counsel": "operational",
         "psyche": "operational",
