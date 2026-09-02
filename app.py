@@ -42,6 +42,8 @@ from ayllu.receipts import chain_turns, make_receipt, sha256_json
 CHAMBER = Path(__file__).resolve().parent / "ayllu" / "static" / "chamber.html"
 COUNSEL_HTML = Path(__file__).resolve().parent / "ayllu" / "static" / "counsel.html"
 PSYCHE_HTML = Path(__file__).resolve().parent / "ayllu" / "static" / "psyche.html"
+HOLO_CSS = Path(__file__).resolve().parent / "ayllu" / "static" / "szl-holo-v2.css"
+HOLO_JS = Path(__file__).resolve().parent / "ayllu" / "static" / "szl-holo-v2.js"
 MAX_PROMPT_CHARS = 6000
 MAX_BODY_BYTES = 24 * 1024
 COUNCIL_MAX = 5
@@ -151,6 +153,16 @@ def health() -> dict[str, Any]:
         "psyche": "operational",
         "origins": catalog()["origins"],
     }
+
+
+@app.get("/assets/szl-holo-v2.css", include_in_schema=False)
+def holo_css() -> PlainTextResponse:
+    return PlainTextResponse(HOLO_CSS.read_text(encoding="utf-8"), media_type="text/css")
+
+
+@app.get("/assets/szl-holo-v2.js", include_in_schema=False)
+def holo_js() -> PlainTextResponse:
+    return PlainTextResponse(HOLO_JS.read_text(encoding="utf-8"), media_type="application/javascript")
 
 
 @app.get("/", response_class=HTMLResponse)
