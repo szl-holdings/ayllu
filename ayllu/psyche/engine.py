@@ -278,6 +278,9 @@ class Psyche:
             "kallpa": "MODELED",
             "riqsiy": "MODELED",
             "chawpi": "MODELED",
+            "yupay": "SOFTWARE",
+            "rimanakuy": "MODELED",
+            "cogitate": "RECORD",
             "iit_phi_s": "UNAVAILABLE",
             "closure": bool((self.last_winay or {}).get("closure", {}).get("value")),
             "ignition": bool((self.last_winay or {}).get("ignition", {}).get("value")),
@@ -287,7 +290,6 @@ class Psyche:
             "lambda": LAMBDA,
             "joules": ENERGY,
         }
-
 
     def sense(self, cue: str, k: int = 6) -> dict[str, Any]:
         hit = kawsay_sense(cue, k=k)
@@ -396,10 +398,13 @@ class Psyche:
             "kallpa": "MODELED",
             "riqsiy": "MODELED",
             "chawpi": "MODELED",
+            "yupay": "SOFTWARE",
+            "rimanakuy": "MODELED",
+            "cogitate": "RECORD",
             "iit": {
                 "phi_s": None,
                 "honesty": Honesty.UNAVAILABLE.value,
-                "note": "No TPM. IIT φ_s is not computed. Huklla H is not Φ.",
+                "note": "No TPM. IIT phi_s is not computed. Huklla H is not Phi.",
             },
             "presence": "CONJECTURE",
             "agi": "CONJECTURE",
@@ -408,6 +413,15 @@ class Psyche:
             "note": "No beat this process. Cue /api/v1/psyche/beat.",
         }
 
+    def cogitate(self) -> dict[str, Any]:
+        from ayllu.psyche.rimanakuy import rimanakuy
+        loads = self.prior_loads or None
+        return rimanakuy(loads)
 
-# Process singleton — same pattern as Lounge.
+    def lattice(self) -> dict[str, Any]:
+        from ayllu.psyche.yupay import yupay
+        loads = self.prior_loads or [1.0, 1.0, 1.0, 1.0, 1.0]
+        return yupay(loads)
+
+
 PSYCHE = Psyche()
