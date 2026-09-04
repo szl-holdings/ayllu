@@ -13,8 +13,8 @@
 | Legal Matter Command `/counsel` | OPERATIONAL. Live a11oy legal vertical is REPORTED when the scrape answers; otherwise UNAVAILABLE |
 | Human Lock | MEASURED fail-closed on brief / draft / docket-brief / council |
 | Allodial 𝒜 | MODELED experimental composite. Not locked-8. Not a land patent |
-| Hugging Face Space | REPORTED after publish; ROADMAP until the Hub token accepts the Space |
-| a-11-oy.com / a11oy.net showcase | REPORTED after the Pages/PR lands |
+| Hugging Face Space | REPORTED running at szlholdings-ayllu.hf.space. Occupancy MEASURED via GET /api/v1/psyche/health. Presence stays CONJECTURE. |
+| a-11-oy.com / a11oy.net showcase | REPORTED. Proof RECORD live on a11oy.net/ayllu/psyche/. Product desk live on a-11-oy.com/ayllu/psyche. |
 | Retired Counsel artifact | SUPERSEDED, retained. Not deleted |
 | Physical effectors | Not in this product |
 | Eleven separately trained models | False. Roles on one routed backend |

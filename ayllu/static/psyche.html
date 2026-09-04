@@ -77,6 +77,10 @@ canvas#graph{width:100%;height:280px;display:block;background:#071018;border-rad
     <div class="kpi"><b id="k-close">—</b><span>closure MEASURED</span></div>
     <div class="kpi"><b id="k-ignite">—</b><span>ignition MEASURED</span></div>
     <div class="kpi"><b id="k-huklla">—</b><span>Huklla H MODELED · not Φ</span></div>
+    <div class="kpi"><b id="k-qhaway">—</b><span>Qhaway Q MODELED · not PCI</span></div>
+    <div class="kpi"><b id="k-kallpa">—</b><span>Kallpa F MODELED · not Friston</span></div>
+    <div class="kpi"><b id="k-riqsiy">—</b><span>Riqsiy Υ MODELED · not HOT</span></div>
+    <div class="kpi"><b id="k-chawpi">—</b><span>Chawpi χ MODELED · not Beggs</span></div>
     <div class="kpi"><b id="k-joules">null</b><span>joules · φ_s UNAVAILABLE · presence CONJECTURE</span></div>
   </div>
   <div class="grid">
@@ -129,7 +133,6 @@ let lockOn = false;
 let graph = {vertices:[], edges:[], counts:{seats:11,organs:5,engrams:0}};
 const SEATS = ["Amaru","Ruwaq","Yupaq","Qhaway","Maskaq","Hampiq","Yanapaq","Chaka","Kamachiq","Qhatuq","Willakuq"];
 const COLORS = ["#e8c074","#ff9a4a","#3af4c8","#b38bff","#7ad7ff","#7dffb0","#6ea8ff","#e8c074","#eef3f6","#ff7a9c","#c9d6e2"];
-
 function setLockUI(){
   const pill = document.getElementById("lockpill");
   const btn = document.getElementById("lockbtn");
@@ -137,7 +140,6 @@ function setLockUI(){
   pill.className = "badge " + (lockOn ? "live" : "software");
   btn.textContent = "Human Lock " + (lockOn ? "on" : "off");
 }
-
 function renderStats(stats){
   if (!stats) return;
   document.getElementById("k-stored").textContent = String(stats.stored ?? 0);
@@ -145,7 +147,6 @@ function renderStats(stats){
   document.getElementById("k-alpha").textContent = stats.alpha == null ? "—" : Number(stats.alpha).toFixed(3);
   document.getElementById("k-joules").textContent = "null";
 }
-
 function renderHits(recall){
   const box = document.getElementById("hits");
   const ranked = (recall && recall.ranked) || [];
@@ -154,7 +155,6 @@ function renderHits(recall){
     `<div class="item"><b>${esc(r.text)}</b><div class="meta">${esc(r.source)} · w=${Number(r.weight||0).toFixed(3)} · ${esc(r.honesty)}</div></div>`
   ).join("");
 }
-
 function drawGraph(){
   const cv = document.getElementById("graph");
   const ctx = cv.getContext("2d");
@@ -196,7 +196,6 @@ function drawGraph(){
   document.getElementById("graphmeta").textContent =
     (c.seats||11)+" seats · "+(c.organs||5)+" organs · "+(c.engrams||0)+" engrams";
 }
-
 async function refresh(){
   const [snap, g] = await Promise.all([j("/api/v1/psyche/snapshot"), j("/api/v1/psyche/graph")]);
   if (snap.ok){
@@ -208,7 +207,6 @@ async function refresh(){
   if (g.ok){ graph = g.data || graph; }
   drawGraph();
 }
-
 document.getElementById("lockbtn").onclick = async () => {
   const r = await post("lock", {engaged: !lockOn});
   if (r.ok){ lockOn = !!r.data.engaged; setLockUI(); document.getElementById("writeout").textContent = lockOn ? "Lock ON. Writes ALLOW." : "Lock off. Writes BLOCKED."; }
@@ -251,9 +249,13 @@ document.getElementById("pulse").onclick = async () => {
   document.getElementById("k-close").textContent = w.closure ? (w.closure.value ? "closed" : "open") : "—";
   document.getElementById("k-ignite").textContent = w.ignition ? (w.ignition.value ? "bound" : "dark") : "—";
   document.getElementById("k-huklla").textContent = w.huklla && w.huklla.H != null ? Number(w.huklla.H).toFixed(3) : "—";
+  document.getElementById("k-qhaway").textContent = w.qhaway && w.qhaway.Q != null ? Number(w.qhaway.Q).toFixed(3) : "—";
+  document.getElementById("k-kallpa").textContent = w.kallpa && w.kallpa.F != null ? Number(w.kallpa.F).toFixed(3) : "—";
+  document.getElementById("k-riqsiy").textContent = w.riqsiy && w.riqsiy.Y != null ? Number(w.riqsiy.Y).toFixed(3) : "—";
+  document.getElementById("k-chawpi").textContent = w.chawpi && w.chawpi.X != null ? Number(w.chawpi.X).toFixed(3) : "—";
   const organs = (d.organs||[]).map(o => o.id+":"+o.decision).join(" → ");
   document.getElementById("beatout").textContent =
-    "pulse "+(d.pulse||0)+" · "+organs+" · C "+(w.closure && w.closure.value ? "closed" : "open")+" · I "+(w.ignition && w.ignition.value ? "bound" : "dark")+" · H "+(w.huklla && w.huklla.H != null ? Number(w.huklla.H).toFixed(3) : "—")+" · D "+(w.imaymana && w.imaymana.D != null ? Number(w.imaymana.D).toFixed(3) : "—")+" · φ_s UNAVAILABLE · presence CONJECTURE · AGI CONJECTURE · joules null";
+    "pulse "+(d.pulse||0)+" · "+organs+" · C "+(w.closure && w.closure.value ? "closed" : "open")+" · I "+(w.ignition && w.ignition.value ? "bound" : "dark")+" · H "+(w.huklla && w.huklla.H != null ? Number(w.huklla.H).toFixed(3) : "—")+" · D "+(w.imaymana && w.imaymana.D != null ? Number(w.imaymana.D).toFixed(3) : "—")+" · Q "+(w.qhaway && w.qhaway.Q != null ? Number(w.qhaway.Q).toFixed(3) : "—")+" · F "+(w.kallpa && w.kallpa.F != null ? Number(w.kallpa.F).toFixed(3) : "—")+" · Υ "+(w.riqsiy && w.riqsiy.Y != null ? Number(w.riqsiy.Y).toFixed(3) : "—")+" · χ "+(w.chawpi && w.chawpi.X != null ? Number(w.chawpi.X).toFixed(3) : "—")+" · φ_s UNAVAILABLE · presence CONJECTURE · AGI CONJECTURE · joules null";
   if (ws.handles && ws.handles.length){
     renderHits({ranked: ws.handles.map(h => ({text: h.label, source: h.nodeId, weight: 0, honesty: "SOFTWARE"}))});
   }
@@ -271,7 +273,6 @@ document.getElementById("graft").onclick = async () => {
   if (d.stats) renderStats(d.stats);
   await refresh();
 };
-
 (function boot(){
   const sel = document.getElementById("who");
   SEATS.forEach(n => { const o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o); });
