@@ -44,13 +44,13 @@ This organ is the continuance. The eleven seats are not deleted.
 | `GET /` | 0-CDN holographic council chamber |
 | `GET /counsel` | Legal Matter Command — live docket, Allodial, grok-4.5, Human Lock |
 | `GET /psyche` | Neural-symbolic psyche — imprint, dual Hopfield recall, replay, Tinku compose |
-| `GET /api/v1/psyche/health` | OPERATIONAL neural + 11 seats + lock |
+| `GET /api/v1/psyche/health` | OPERATIONAL neural + 11 seats + lock. Q/F/Y/X MODELED. φ_s UNAVAILABLE |
 | `POST /api/v1/psyche/imprint` | Hebb+Oja+BCM write. Fail-closed Human Lock. UNAVAILABLE cannot write |
 | `POST /api/v1/psyche/recall` | Dual Hopfield (classic + softmax) + seat morphism |
 | `POST /api/v1/psyche/replay` | Reverse-Hebb unlearning. MEASURED fidelity / ghost rate |
 | `POST /api/v1/psyche/compose` | Tinku pulse: encode → recall → seat → optional imprint |
-| `POST /api/v1/psyche/beat` | five-organ Kawsay pulse. Occupancy MEASURED. Presence CONJECTURE |
-| `GET /api/v1/psyche/winay` | last autopoietic closure. Huklla H MODELED, not IIT Φ. φ_s UNAVAILABLE |
+| `POST /api/v1/psyche/beat` | five-organ Kawsay pulse. Occupancy MEASURED. Q/F/Y/X MODELED. Presence CONJECTURE |
+| `GET /api/v1/psyche/winay` | last autopoietic closure. H/D/Q/F/Y/X MODELED. φ_s UNAVAILABLE. Not presence |
 | `GET /api/v1/ayllu/roster` | 11 personas + honest backend mode |
 | `POST /api/v1/ayllu/ask` | one seat, bounded, receipted |
 | `POST /api/v1/ayllu/council` | capped fan-out; optional 2-round debate |
