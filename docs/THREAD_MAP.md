@@ -8,7 +8,7 @@ Measured 2026-09-04.
 |---|---|---|
 | Canonical Python source | https://github.com/szl-holdings/ayllu | MEASURED public |
 | HF bind slot | https://github.com/szl-holdings/ayllu-hf-space | bind only, not a second council |
-| Tracking | https://github.com/szl-holdings/ayllu/issues/20 | open |
+| Tracking | https://github.com/szl-holdings/ayllu/issues/20 | closed completed. Occupancy MEASURED. Presence CONJECTURE. |
 | Runtime occupancy | https://huggingface.co/spaces/SZLHOLDINGS/ayllu | MEASURED Running |
 | Runtime host | https://szlholdings-ayllu.hf.space | MEASURED SOFTWARE |
 | Product surface | https://a-11-oy.com | product fabric; `/ayllu` is Command Center page |
@@ -38,6 +38,9 @@ Hugging Face Inference Providers need a token — refused for sovereign path.
 - xAI / Ollama / CHASKI probes on the Space host: unreachable — SOFTWARE is honest
 - Λ uniqueness remains Conjecture 1
 - receipts UNSIGNED unless a real Cosign signer is injected
+- Wiñay / Huklla / Qhaway / Kallpa / Riqsiy / Chawpi OPERATIONAL as MODELED analogs
+- Yupay K is SOFTWARE typed product. Not Symbolica. Not Φ.
+- IIT φ_s UNAVAILABLE. Presence CONJECTURE. AGI CONJECTURE. Joules null.
 
 ## Anatomy flow
 
