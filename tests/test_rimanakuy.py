@@ -22,3 +22,21 @@ def test_h_and_y_diverge_on_one_hot_versus_uniform() -> None:
     assert ran["battery"]["silent"]["Q"] == 0.0
     assert ran["battery"]["one_hot"]["Y"] == 1.0
     assert ran["battery"]["uniform"]["H"] == 0.4
+
+
+def test_ruray_does_not_upgrade_agi() -> None:
+    from ayllu.psyche.engine import Psyche
+
+    p = Psyche()
+    before = p.ruray()
+    assert before["agi"] == "CONJECTURE"
+    assert before["presence"] == "CONJECTURE"
+    assert before["competence"] == "UNAVAILABLE"
+    p.set_lock(True)
+    beat = p.beat("ruray competence", seat="Maskaq")
+    after = p.ruray()
+    assert after["agi"] == "CONJECTURE"
+    assert after["presence"] == "CONJECTURE"
+    assert beat["presence"]["label"] == "CONJECTURE"
+    if after["occupancy"] == 5 and after["closed"]:
+        assert after["competence"] == "MEASURED"
