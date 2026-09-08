@@ -1,3 +1,4 @@
+from ayllu.psyche.expose import ruray_from
 from ayllu.psyche.rimanakuy import BODIES, EXPECTED, rimanakuy, score
 
 
@@ -28,13 +29,13 @@ def test_ruray_does_not_upgrade_agi() -> None:
     from ayllu.psyche.engine import Psyche
 
     p = Psyche()
-    before = p.ruray()
+    before = ruray_from(p)
     assert before["agi"] == "CONJECTURE"
     assert before["presence"] == "CONJECTURE"
     assert before["competence"] == "UNAVAILABLE"
     p.set_lock(True)
     beat = p.beat("ruray competence", seat="Maskaq")
-    after = p.ruray()
+    after = ruray_from(p)
     assert after["agi"] == "CONJECTURE"
     assert after["presence"] == "CONJECTURE"
     assert beat["presence"]["label"] == "CONJECTURE"
