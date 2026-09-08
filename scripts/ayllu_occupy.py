@@ -29,6 +29,10 @@ SMOKE = [
     "/api/v1/ayllu/retrieve?q=lambda",
     "/api/v1/counsel/allodial",
     "/api/v1/psyche/health",
+    "/api/v1/psyche/winay",
+    "/api/v1/psyche/cogitate",
+    "/api/v1/psyche/lattice",
+    "/api/v1/psyche/ruray",
 ]
 
 

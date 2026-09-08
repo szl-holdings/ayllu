@@ -12,4 +12,4 @@ COPY data ./data
 COPY NOTICE ./NOTICE
 COPY HONEST_DISCLOSURE.md ./HONEST_DISCLOSURE.md
 EXPOSE 7860
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "ayllu.space:app", "--host", "0.0.0.0", "--port", "7860"]
