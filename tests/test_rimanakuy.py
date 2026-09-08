@@ -41,3 +41,38 @@ def test_ruray_does_not_upgrade_agi() -> None:
     assert beat["presence"]["label"] == "CONJECTURE"
     if after["occupancy"] == 5 and after["closed"]:
         assert after["competence"] == "MEASURED"
+
+
+def test_cogitate_lattice_ruray_http_routes() -> None:
+    from fastapi.testclient import TestClient
+
+    from app import app
+
+    c = TestClient(app)
+    cog = c.get("/api/v1/psyche/cogitate")
+    assert cog.status_code == 200
+    body = cog.json()
+    assert body["schema"] == "szl.ayllu.cogitate/v1"
+    assert body["name"] == "Rimanakuy"
+    assert body["diverge"]["same_order"] is False
+    assert body["cogitate"]["honesty"] == "RECORD"
+    assert body["cogitate"]["not_the_experiment"] is True
+    assert body["presence"]["label"] == "CONJECTURE"
+    assert body["agi"]["label"] == "CONJECTURE"
+    lat = c.get("/api/v1/psyche/lattice")
+    assert lat.status_code == 200
+    assert lat.json()["schema"] == "szl.ayllu.yupay/v1"
+    assert lat.json()["honesty"] == "SOFTWARE"
+    rur = c.get("/api/v1/psyche/ruray")
+    assert rur.status_code == 200
+    assert rur.json()["agi"] == "CONJECTURE"
+    assert rur.json()["presence"] == "CONJECTURE"
+    man = c.get("/api/v1/ayllu/manifest")
+    assert man.status_code == 200
+    psyche = man.json()["psyche"]
+    assert psyche["cogitate"] == "/api/v1/psyche/cogitate"
+    assert psyche["lattice"] == "/api/v1/psyche/lattice"
+    assert psyche["ruray"] == "/api/v1/psyche/ruray"
+    page = c.get("/psyche")
+    assert page.status_code == 200
+    assert "/api/v1/psyche/cogitate" in page.text

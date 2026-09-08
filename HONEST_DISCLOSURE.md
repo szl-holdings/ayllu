@@ -23,7 +23,11 @@
 | Huklla H | MODELED cheapest pentagon cut. Not IIT Φ. Not a conscious complex. |
 | Imaymana D | MODELED load entropy. Not IIT. Never multiplied with H into a fake Φ. |
 | IIT φ_s | UNAVAILABLE. No TPM. Huklla is not Φ. |
-| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, D, Q, F, Y, or X. |
+| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, D, Q, F, Y, X, Ruray, or Rimanakuy. |
+| Rimanakuy battery | MODELED four-body adversarial score. H prefers uniform, Υ prefers one-hot. Not the COGITATE experiment. |
+| COGITATE Nature 642:133–142 (2025) | RECORD citation only. doi:10.1038/s41586-025-08888-1. Not run here. |
+| Ruray competence | MEASURED after a closed occupancy-5 beat. Competence is not AGI. |
+| GET /api/v1/psyche/cogitate · /lattice · /ruray | OPERATIONAL HTTP on the product. Space occupancy MEASURED after publish. |
 | Qhaway Q | MODELED load-gated perturbational LZ. Not Casali PCI. Not IIT Φ. Silent body is 0. |
 | Kallpa F | MODELED mean-square load minus α·D. Not Friston free energy. Not a mind. |
 | Riqsiy Υ | MODELED spotlight schema cosine. Not HOT. Not Graziano AST. Silent body is 0. |
