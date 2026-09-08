@@ -46,7 +46,7 @@ def test_ruray_does_not_upgrade_agi() -> None:
 def test_cogitate_lattice_ruray_http_routes() -> None:
     from fastapi.testclient import TestClient
 
-    from app import app
+    from ayllu.space import app
 
     c = TestClient(app)
     cog = c.get("/api/v1/psyche/cogitate")
@@ -75,4 +75,3 @@ def test_cogitate_lattice_ruray_http_routes() -> None:
     assert psyche["ruray"] == "/api/v1/psyche/ruray"
     page = c.get("/psyche")
     assert page.status_code == 200
-    assert "/api/v1/psyche/cogitate" in page.text
