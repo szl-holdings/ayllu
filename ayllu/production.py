@@ -21,6 +21,7 @@ CONTRACT = {
     "joules": None,
     "lambda": "CONJECTURE_1",
     "signer": "UNSIGNED-honest",
+    "boot_occupy": True,
     "note": (
         "Production-grade means the organ is occupied and fail-closed. "
         "It does not mean court filing authority or a mind."
