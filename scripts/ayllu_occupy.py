@@ -3,6 +3,7 @@
 
 HF_TOKEN required. XAI_API_KEY optional.
 Never fabricates LIVE. Λ = Conjecture 1.
+Runtime OPERATIONAL. Legal authority PROPOSAL_ONLY.
 """
 from __future__ import annotations
 
@@ -24,9 +25,13 @@ SMOKE = [
     "/counsel",
     "/psyche",
     "/health",
+    "/readyz",
     "/api/v1/ayllu/roster",
     "/api/v1/ayllu/manifest",
     "/api/v1/ayllu/retrieve?q=lambda",
+    "/api/v1/counsel/health",
+    "/api/v1/counsel/docket",
+    "/api/v1/counsel/snapshot",
     "/api/v1/counsel/allodial",
     "/api/v1/psyche/health",
     "/api/v1/psyche/winay",
@@ -39,6 +44,23 @@ SMOKE = [
 def get(url: str, timeout: int = 20):
     try:
         with urllib.request.urlopen(url, timeout=timeout) as res:
+            return res.status, res.read()[:4000]
+    except urllib.error.HTTPError as err:
+        return err.code, err.read()[:400] if err.fp else b""
+    except Exception as err:
+        return 0, str(err).encode()
+
+
+def post(url: str, payload: dict, timeout: int = 30):
+    body = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as res:
             return res.status, res.read()[:4000]
     except urllib.error.HTTPError as err:
         return err.code, err.read()[:400] if err.fp else b""
@@ -106,7 +128,27 @@ def main() -> int:
                 ok = False
         print("smoke", json.dumps(last))
         if ok:
+            beat_status, beat_body = post(
+                HOST + "/api/v1/psyche/beat",
+                {"cue": "occupy production pulse", "human_lock": True, "seat": "Maskaq"},
+            )
+            infer_status, infer_body = post(
+                HOST + "/api/v1/counsel/infer",
+                {
+                    "action": "policy",
+                    "prompt": "Production occupy policy scan. Informational only.",
+                    "human_lock": True,
+                },
+            )
+            print("beat", beat_status)
+            print("infer_policy", infer_status)
+            if beat_status != 200 or infer_status != 200:
+                print("ROADMAP — POST smoke failed. Do not label LIVE.")
+                print(beat_body[:400])
+                print(infer_body[:400])
+                return 6
             print("OCCUPANCY MEASURED")
+            print("runtime OPERATIONAL legal_authority PROPOSAL_ONLY agi CONJECTURE")
             return 0
         time.sleep(15)
     print("ROADMAP — smoke not all-200 in 600s. Do not label LIVE.")
