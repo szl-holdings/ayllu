@@ -10,9 +10,11 @@
 | Receipt signatures | UNSIGNED unless a Cosign signer is injected; never fabricated |
 | Λ uniqueness | CONJECTURE 1 — never a theorem, never green |
 | LIVE model answers | grok-4.5 when `XAI_API_KEY` is set and reachable; else CHASKI-R2 `:8098`, Ollama, or `OPENAI_BASE_URL` |
-| Legal Matter Command `/counsel` | OPERATIONAL. Live a11oy legal vertical is REPORTED when the scrape answers; otherwise UNAVAILABLE |
+| Legal Matter Command `/counsel` | OPERATIONAL runtime. Live a11oy legal vertical is REPORTED when the scrape answers; otherwise UNAVAILABLE |
+| Legal / filing authority | PROPOSAL_ONLY. Informational. Not a law firm. Human Lock fail-closed. |
+| Production grade | Runtime OPERATIONAL on occupied Space routes. Not executive authority. Not AGI. |
 | Human Lock | MEASURED fail-closed on brief / draft / docket-brief / council |
-| Allodial 𝒜 | MODELED experimental composite. Not locked-8. Not a land patent |
+| Allodial ᵃ | MODELED experimental composite. Not locked-8. Not a land patent |
 | Hugging Face Space | REPORTED running at szlholdings-ayllu.hf.space. Occupancy MEASURED via GET /api/v1/psyche/health. Presence stays CONJECTURE. |
 | a-11-oy.com / a11oy.net showcase | REPORTED. Proof RECORD live on a11oy.net/ayllu/psyche/. Product desk live on a-11-oy.com/ayllu/psyche. |
 | Retired Counsel artifact | SUPERSEDED, retained. Not deleted |
