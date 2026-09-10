@@ -1,89 +1,102 @@
-"""Kutiy — extra residual pulse depth after Wiñay couple_once.
+"""Kutiy — extra residual pulse depth.
 
-Fashion method: study a public *idea*, write original SZL code.
-Public idea cited: Geiping et al., arXiv:2502.05171 (recurrent test-time
-depth). Ayllu does not ingest Huginn weights, looped-transformer source,
-OpenAI GPT-6 Astra, or Google Project Astra.
+Studied from the public recurrent-depth *idea* (Geiping et al.,
+arXiv:2502.05171): iterate a block until successive states stop
+moving. Original Ayllu code. No Huginn weights. Not Project Astra.
+Not GPT-6 Astra. Not AGI.
 
-Kutiy sits on Puriq/Kawsay *after* couple_once. It never edits the
-autopoietic residual. Presence and AGI stay CONJECTURE.
+Kutiy wraps already-closed Wiñay beats. It does not enter
+couple_once. Presence stays CONJECTURE.
 """
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any
 
-from ayllu.psyche.types import Honesty
-from ayllu.psyche.winay import (
-    EPS,
-    GAMMA,
-    couple_once,
-    huklla,
-    qhaway,
-)
-
-R_MAX = 8
-HALT_EPS = 1e-3
-STUDIED_FROM = "Geiping et al. arXiv:2502.05171 — idea of extra test-time steps, not their model"
+R_MAX = 4
+EPS = 1e-3
 
 
-def kutiy(
-    loads: Sequence[float] | None = None,
-    *,
-    r_max: int = R_MAX,
-    eps: float = HALT_EPS,
-    gamma: float = GAMMA,
-) -> dict[str, Any]:
-    """Iterate couple_once up to r_max. Halt when ΔH+ΔQ and ΔL fall below eps."""
-    current = [max(0.0, min(1.0, float(x))) for x in (loads or [1.0, 1.0, 1.0, 1.0, 1.0])]
-    if len(current) < 2:
-        current = [1.0, 1.0, 1.0, 1.0, 1.0]
-    h0 = float(huklla(current)["H"])
-    q0 = float(qhaway(current)["Q"])
-    series = [{"step": 0, "H": h0, "Q": q0, "loads": [round(v, 3) for v in current]}]
-    used = 0
-    halted = False
-    reason = "r_max"
-    for step in range(1, max(1, int(r_max)) + 1):
-        nxt = couple_once(current, gamma)
-        d_l = max(abs(a - b) for a, b in zip(current, nxt))
-        h1 = float(huklla(nxt)["H"])
-        q1 = float(qhaway(nxt)["Q"])
-        d_score = abs(h1 - h0) + abs(q1 - q0)
-        current = nxt
-        h0, q0 = h1, q1
-        used = step
-        series.append(
-            {
-                "step": step,
-                "H": h1,
-                "Q": q1,
-                "dL": round(d_l, 6),
-                "dHQ": round(d_score, 6),
-                "loads": [round(v, 3) for v in current],
-            }
-        )
-        if d_l < float(eps) or d_score < float(eps):
-            halted = True
-            reason = "residual"
+def _num(win: dict[str, Any], *path: str) -> float | None:
+    cur: Any = win
+    for key in path:
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(key)
+    if isinstance(cur, dict):
+        cur = cur.get("value", cur.get("score", cur.get("H")))
+    try:
+        return float(cur)
+    except (TypeError, ValueError):
+        return None
+
+
+def _snapshot(win: dict[str, Any]) -> dict[str, float | None]:
+    return {
+        "H": _num(win, "huklla", "H") or _num(win, "H") or _num(win, "huklla"),
+        "Q": _num(win, "qhaway", "Q") or _num(win, "Q") or _num(win, "qhaway"),
+        "Y": _num(win, "riqsiy", "Y") or _num(win, "riqsiy", "upsilon") or _num(win, "Y"),
+    }
+
+
+def _delta(a: dict[str, float | None], b: dict[str, float | None]) -> float:
+    gaps: list[float] = []
+    for key in ("H", "Q", "Y"):
+        left, right = a.get(key), b.get(key)
+        if left is None or right is None:
+            continue
+        gaps.append(abs(left - right))
+    return max(gaps) if gaps else 0.0
+
+
+def kutiy(psyche: Any, r_max: int = R_MAX, eps: float = EPS) -> dict[str, Any]:
+    """Run extra closed beats. Halt when scalars stop moving or r_max."""
+    steps = 0
+    halted = "empty"
+    before = _snapshot(getattr(psyche, "last_winay", None) or {})
+    after = dict(before)
+    if int(getattr(psyche, "pulses", 0) or 0) < 1:
+        return {
+            "schema": "szl.ayllu.kutiy/v1",
+            "name": "Kutiy",
+            "honesty": "UNAVAILABLE",
+            "steps": 0,
+            "halt": "no-occupancy",
+            "delta": None,
+            "r_max": r_max,
+            "eps": eps,
+            "agi": "CONJECTURE",
+            "presence": "CONJECTURE",
+            "studied": "Geiping et al. arXiv:2502.05171 recurrent-depth idea",
+            "copied": False,
+            "note": "No closed beat yet. Kutiy does not invent occupancy.",
+        }
+    prev = before
+    limit = max(1, min(int(r_max), 8))
+    for i in range(limit):
+        psyche.beat(f"kutiy residual {i + 1}", seat="Qhaway")
+        steps += 1
+        after = _snapshot(getattr(psyche, "last_winay", None) or {})
+        gap = _delta(prev, after)
+        if gap < eps:
+            halted = "converged"
             break
+        prev = after
+        halted = "r_max"
+    gap = _delta(before, after)
     return {
         "schema": "szl.ayllu.kutiy/v1",
         "name": "Kutiy",
-        "steps": used,
-        "r_max": int(r_max),
-        "halted": halted,
-        "reason": reason,
-        "loads": [round(v, 3) for v in current],
-        "H": series[-1]["H"],
-        "Q": series[-1]["Q"],
-        "series": series,
-        "couple_once_untouched": True,
-        "studied_from": STUDIED_FROM,
-        "honesty": Honesty.MODELED.value,
+        "honesty": "MODELED",
+        "steps": steps,
+        "halt": halted,
+        "delta": gap,
+        "before": before,
+        "after": after,
+        "r_max": limit,
+        "eps": eps,
         "agi": "CONJECTURE",
         "presence": "CONJECTURE",
-        "note": (
-            "Original extra couple_once steps with a residual halt. "
-            "MODELED compute depth. Not Huginn. Not Astra. Not AGI."
-        ),
+        "studied": "Geiping et al. arXiv:2502.05171 recurrent-depth idea",
+        "copied": False,
+        "note": "Extra closed Wiñay beats. MODELED compute. Not Huginn. Not a mind.",
     }

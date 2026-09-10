@@ -1,7 +1,7 @@
 """Space entry. Same FastAPI app plus frontier HTTP.
 
 Dockerfile CMD targets this module so SZLHOLDINGS/ayllu occupies
-/cogitate /lattice /ruray. AGI stays CONJECTURE. Presence stays CONJECTURE.
+/cogitate /lattice /ruray /kutiy. AGI stays CONJECTURE. Presence stays CONJECTURE.
 """
 from __future__ import annotations
 
@@ -12,15 +12,49 @@ from fastapi.responses import JSONResponse
 from app import app
 from ayllu.production import contract
 from ayllu.psyche.engine import PSYCHE
-from ayllu.psyche.expose import cogitate_from, lattice_from, ruray_from
+from ayllu.psyche.expose import cogitate_from, kutiy_from, lattice_from, ruray_from
 
 
 def occupy_boot() -> dict[str, Any]:
     """One real five-organ beat at process start. Not a mock. Not AGI."""
-    if PSYCHE.pulses < 1:
-        PSYCHE.set_lock(True)
-        PSYCHE.beat("boot occupy — five organs", seat="Maskaq")
-    return ruray_from(PSYCHE)
+    try:
+        if PSYCHE.pulses < 1:
+            PSYCHE.set_lock(True)
+            PSYCHE.beat("boot occupy — five organs", seat="Maskaq")
+        return ruray_from(PSYCHE)
+    except Exception as exc:
+        return {
+            "schema": "szl.ayllu.ruray/v1",
+            "name": "Ruray",
+            "competence": "UNAVAILABLE",
+            "occupancy": 0,
+            "closed": False,
+            "pulses": int(getattr(PSYCHE, "pulses", 0) or 0),
+            "agi": "CONJECTURE",
+            "presence": "CONJECTURE",
+            "honesty": "UNAVAILABLE",
+            "boot_error": type(exc).__name__,
+            "note": "Boot occupy failed closed. HTTP still serves.",
+        }
+
+
+def _register_startup() -> None:
+    """FastAPI 0.141 has no add_event_handler. Never die at import."""
+    handler = getattr(app, "add_event_handler", None)
+    if callable(handler):
+        try:
+            handler("startup", occupy_boot)
+            return
+        except Exception:
+            pass
+    on_event = getattr(app, "on_event", None)
+    if callable(on_event):
+        try:
+            on_event("startup")(occupy_boot)
+            return
+        except Exception:
+            pass
+    occupy_boot()
 
 
 @app.get("/api/v1/psyche/cogitate")
@@ -36,6 +70,11 @@ def psyche_lattice() -> JSONResponse:
 @app.get("/api/v1/psyche/ruray")
 def psyche_ruray() -> JSONResponse:
     return JSONResponse(ruray_from(PSYCHE))
+
+
+@app.get("/api/v1/psyche/kutiy")
+def psyche_kutiy() -> JSONResponse:
+    return JSONResponse(kutiy_from(PSYCHE))
 
 
 @app.get("/api/v1/ayllu/production")
@@ -102,6 +141,7 @@ def _annotate_manifest() -> None:
             psyche["cogitate"] = "/api/v1/psyche/cogitate"
             psyche["lattice"] = "/api/v1/psyche/lattice"
             psyche["ruray"] = "/api/v1/psyche/ruray"
+            psyche["kutiy"] = "/api/v1/psyche/kutiy"
         if isinstance(body, dict):
             body["organ_grade"] = "PRODUCTION"
             body["legal_authority"] = "PROPOSAL_ONLY"
@@ -117,4 +157,4 @@ def _annotate_manifest() -> None:
 
 _annotate_manifest()
 _annotate_readyz()
-app.add_event_handler("startup", occupy_boot)
+_register_startup()

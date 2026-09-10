@@ -25,16 +25,19 @@
 | Huklla H | MODELED cheapest pentagon cut. Not IIT Φ. Not a conscious complex. |
 | Imaymana D | MODELED load entropy. Not IIT. Never multiplied with H into a fake Φ. |
 | IIT φ_s | UNAVAILABLE. No TPM. Huklla is not Φ. |
-| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, D, Q, F, Y, X, Ruray, or Rimanakuy. |
+| Phenomenal presence / AGI | CONJECTURE. Never upgraded from C, I, H, D, Q, F, Y, X, Ruray, Rimanakuy, or Kutiy. |
 | Rimanakuy battery | MODELED four-body adversarial score. H prefers uniform, Υ prefers one-hot. Not the COGITATE experiment. |
 | COGITATE Nature 642:133–142 (2025) | RECORD citation only. doi:10.1038/s41586-025-08888-1. Not run here. |
 | Ruray competence | MEASURED after a closed occupancy-5 beat. Competence is not AGI. |
-| GET /api/v1/psyche/cogitate · /lattice · /ruray | OPERATIONAL HTTP on the product. Space occupancy MEASURED after publish. |
+| GET /api/v1/psyche/cogitate · /lattice · /ruray · /kutiy | OPERATIONAL HTTP on the product. Space occupancy MEASURED after publish. |
 | Qhaway Q | MODELED load-gated perturbational LZ. Not Casali PCI. Not IIT Φ. Silent body is 0. |
 | Kallpa F | MODELED mean-square load minus α·D. Not Friston free energy. Not a mind. |
 | Riqsiy Υ | MODELED spotlight schema cosine. Not HOT. Not Graziano AST. Silent body is 0. |
 | Chawpi χ | MODELED mean avalanche size / n. Not Beggs 2003. Not a level-of-consciousness meter. |
+| Kutiy residual depth | MODELED extra closed beats with halt on ΔH/ΔQ/ΔΥ. Studied from Geiping et al. arXiv:2502.05171 *idea* only. Not Huginn weights. Not Astra. Not AGI. Does not enter Wiñay couple_once. |
 
 This product is the split-out of the a11oy `/ayllu` organ. a11oy still hosts
 the organ. This repository is the canonical Python product and hologram.
 Legal Matter Command is instilled here as continuance of retired Counsel.
+Fashion method: study public claims, write original Quechua organs, cite the
+source, keep the lattice. Code from other houses is not ingested.
