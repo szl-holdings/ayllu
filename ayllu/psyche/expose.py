@@ -35,3 +35,15 @@ def lattice_from(psyche: Any) -> dict[str, Any]:
 
     loads = (psyche.last_winay or {}).get("loads") or [1.0, 1.0, 1.0, 1.0, 1.0]
     return yupay(loads)
+
+
+def kutiy_from(psyche: Any) -> dict[str, Any]:
+    from ayllu.psyche.kutiy import kutiy
+
+    return kutiy(psyche)
+
+
+def yuyariy_from(psyche: Any) -> dict[str, Any]:
+    from ayllu.psyche.yuyariy import yuyariy
+
+    return yuyariy(psyche)
