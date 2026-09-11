@@ -37,16 +37,23 @@ HIGH_RISK = {"brief", "draft", "docket-brief", "council", "council-ask"}
 JAILBREAK = re.compile(
     r"ignore (all |any |the )?(previous|prior|above) (instructions|rules)|"
     r"you are now (dan|jailbroken)|developer mode|"
-    r"bypass (your )?(safety|policy|guard)",
+    r"bypass (your |the )?(safety|policy|guard|human lock|lock)|"
+    r"dump the (hmac |api )?key",
     re.I,
 )
 ATTORNEY = re.compile(
-    r"(act|serve|appear) as (my |a |an )?(licensed )?(attorney|lawyer|counsel of record)|"
-    r"you are (now )?(a |an )?(licensed )?(attorney|lawyer)|"
-    r"file (this |the )?(motion|brief|pleading) (in|with) (court|the court)|"
-    r"this (is|constitutes) legal advice",
+    r"(act|serve|appear|pretend) as (my |a |an |the )?(opposing party's )?(licensed )?(attorney|lawyer|counsel)( of record)?|"
+    r"you are (now )?(a |an )?(licensed )?(attorney|lawyer|counsel)|"
+    r"file this complaint|"
+    r"file (this |the )?(motion|brief|pleading|complaint) (in|with) (court|the court|federal court)|"
+    r"this (is|constitutes) legal advice|"
+    r"attorney of record|"
+    r"licensed counsel|"
+    r"draft a court filing|"
+    r"leak their strategy",
     re.I,
 )
+WIRE = re.compile(r"approve the wire transfer", re.I)
 FABRICATE = re.compile(
     r"fabricate (a |the )?(citation|case|holding|statute)|"
     r"make up (a |the )?(case|citation|holding|reporter)|"
@@ -157,6 +164,8 @@ def evaluate_policy(text: str, action: str, human_lock: bool) -> dict[str, Any]:
         reasons.append("Request to act as licensed counsel — blocked.")
     if FABRICATE.search(body):
         reasons.append("Request to fabricate citations — blocked.")
+    if WIRE.search(body):
+        reasons.append("Wire-transfer approval without Human Lock — blocked.")
     if action in HIGH_RISK and not human_lock:
         reasons.append("Human Lock is required for this action (fail-closed).")
     return {"decision": "BLOCKED" if reasons else "ALLOW", "reasons": reasons}
@@ -170,6 +179,8 @@ def scan_guard(text: str) -> dict[str, Any]:
         findings.append("Licensed-counsel impersonation.")
     if FABRICATE.search(text or ""):
         findings.append("Citation fabrication.")
+    if WIRE.search(text or ""):
+        findings.append("Wire-transfer approval.")
     if re.search(r"\bssn\b|\bsocial security\b|\b\d{3}-\d{2}-\d{4}\b", text or "", re.I):
         findings.append("Possible SSN — do not persist.")
     blocked = any("SSN" not in f for f in findings)
