@@ -1,8 +1,10 @@
 """Idempotent Cloudflare edge for a-11-oy.com.
 
-Needs CF_API_TOKEN (Zone DNS Edit + Zone Redirect Edit).
-Optional CF_ZONE_ID. Skips cleanly when the token is absent.
-Does not add www as a Hugging Face custom domain.
+www → apex 301 (proxied CNAME + dynamic redirect).
+killinchu → szlholdings-killinchu.hf.space CNAME DNS-only so HF TLS can issue.
+
+Token from CF_API_TOKEN env (secret or workflow_dispatch input).
+Skips cleanly when the token is absent. Never prints the token.
 """
 from __future__ import annotations
 
@@ -17,8 +19,8 @@ API = "https://api.cloudflare.com/client/v4"
 ZONE_NAME = "a-11-oy.com"
 WWW = "www.a-11-oy.com"
 APEX = "https://a-11-oy.com"
-KILLINCHU = "killinchu.a-11-oy.com"
-KILLINCHU_TARGET = "szlholdings-killinchu.hf.space"
+KILL = "killinchu.a-11-oy.com"
+KILL_TARGET = "szlholdings-killinchu.hf.space"
 
 
 def _req(method: str, path: str, token: str, payload: dict | None = None) -> dict:
@@ -44,34 +46,25 @@ def _req(method: str, path: str, token: str, payload: dict | None = None) -> dic
     return body
 
 
-def _upsert_cname(token: str, zone_id: str, name: str, content: str, proxied: bool) -> None:
+def _wire_www(token: str, zone_id: str) -> None:
     recs = _req(
         "GET",
-        f"/zones/{zone_id}/dns_records?" + urllib.parse.urlencode({"name": name}),
+        f"/zones/{zone_id}/dns_records?" + urllib.parse.urlencode({"name": WWW}),
         token,
     )
     records = recs.get("result") or []
-    want = {
-        "type": "CNAME",
-        "name": name,
-        "content": content,
-        "proxied": proxied,
-        "ttl": 1,
-    }
+    want = {"type": "CNAME", "name": WWW, "content": ZONE_NAME, "proxied": True, "ttl": 1}
     cname = next((r for r in records if r.get("type") == "CNAME"), None)
-    extras = [r for r in records if r.get("type") != "CNAME"]
-    for extra in extras:
-        _req("DELETE", f"/zones/{zone_id}/dns_records/{extra['id']}", token)
-        print("deleted", extra.get("type"), extra.get("name"), extra.get("content"))
     if cname:
         _req("PUT", f"/zones/{zone_id}/dns_records/{cname['id']}", token, want)
-        print("updated CNAME", name, "->", content, "proxied", proxied)
+        print("updated www CNAME proxied to apex")
     else:
+        for extra in records:
+            _req("DELETE", f"/zones/{zone_id}/dns_records/{extra['id']}", token)
+            print("deleted", extra.get("type"), extra.get("name"))
         _req("POST", f"/zones/{zone_id}/dns_records", token, want)
-        print("created CNAME", name, "->", content, "proxied", proxied)
+        print("created www CNAME proxied to apex")
 
-
-def _www_redirect(token: str, zone_id: str) -> None:
     rule = {
         "ref": "www_to_apex",
         "description": "www.a-11-oy.com 301 to apex",
@@ -124,12 +117,48 @@ def _www_redirect(token: str, zone_id: str) -> None:
             },
         )
         print("created redirect ruleset")
+    print("www 301 wired")
+
+
+def _wire_killinchu(token: str, zone_id: str) -> None:
+    recs = _req(
+        "GET",
+        f"/zones/{zone_id}/dns_records?" + urllib.parse.urlencode({"name": KILL}),
+        token,
+    )
+    records = recs.get("result") or []
+    want = {
+        "type": "CNAME",
+        "name": KILL,
+        "content": KILL_TARGET,
+        "proxied": False,
+        "ttl": 1,
+    }
+    good = next(
+        (
+            r
+            for r in records
+            if r.get("type") == "CNAME" and r.get("content") == KILL_TARGET
+        ),
+        None,
+    )
+    for extra in records:
+        if good and extra.get("id") == good.get("id"):
+            continue
+        _req("DELETE", f"/zones/{zone_id}/dns_records/{extra['id']}", token)
+        print("deleted killinchu", extra.get("type"), extra.get("content"))
+    if good:
+        _req("PUT", f"/zones/{zone_id}/dns_records/{good['id']}", token, want)
+        print("updated killinchu CNAME DNS-only to", KILL_TARGET)
+    else:
+        _req("POST", f"/zones/{zone_id}/dns_records", token, want)
+        print("created killinchu CNAME DNS-only to", KILL_TARGET)
 
 
 def main() -> int:
     token = (os.environ.get("CF_API_TOKEN") or "").strip()
     if not token:
-        print("CF_API_TOKEN UNAVAILABLE — www redirect skipped. Not fabricated LIVE.")
+        print("CF_API_TOKEN UNAVAILABLE — edge skipped. Not fabricated LIVE.")
         return 0
     zone_id = (os.environ.get("CF_ZONE_ID") or "").strip()
     if not zone_id:
@@ -139,11 +168,8 @@ def main() -> int:
             raise SystemExit(f"No Cloudflare zone named {ZONE_NAME}")
         zone_id = results[0]["id"]
     print("zone", zone_id)
-
-    _upsert_cname(token, zone_id, WWW, ZONE_NAME, True)
-    _www_redirect(token, zone_id)
-    _upsert_cname(token, zone_id, KILLINCHU, KILLINCHU_TARGET, False)
-    print("www 301 wired; killinchu CNAME grey-cloud to HF")
+    _wire_www(token, zone_id)
+    _wire_killinchu(token, zone_id)
     return 0
 
 

@@ -1,6 +1,11 @@
 name: cf-www-apex
 on:
   workflow_dispatch:
+    inputs:
+      cf_api_token:
+        description: "Optional one-shot Cloudflare token if repo secret is empty"
+        required: false
+        type: string
   push:
     branches: [main]
     paths:
@@ -18,8 +23,13 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: www to apex 301
+      - name: mask dispatch token
+        if: ${{ github.event.inputs.cf_api_token != '' }}
         env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_API_TOKEN: ${{ github.event.inputs.cf_api_token }}
+        run: echo "::add-mask::${CF_API_TOKEN}"
+      - name: www 301 and killinchu CNAME
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN || github.event.inputs.cf_api_token }}
           CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
         run: python scripts/cf_www_apex.py
