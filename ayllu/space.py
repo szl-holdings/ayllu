@@ -202,6 +202,8 @@ def _annotate_manifest() -> None:
             body["organ_grade"] = "PRODUCTION"
             body["legal_authority"] = "PROPOSAL_ONLY"
             body["production"] = "/api/v1/ayllu/production"
+            body["effectiveness"] = "MEASURED"
+            body["effectiveness_scope"] = "local-policy-ALLOW-BLOCKED"
         return body
 
     _rebind("manifest", manifest)
