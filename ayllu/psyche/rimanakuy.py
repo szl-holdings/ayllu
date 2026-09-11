@@ -89,3 +89,25 @@ def rimanakuy(live: Sequence[float] | None = None) -> dict[str, Any]:
         "honesty": Honesty.MODELED.value,
         "note": "Adversarial battery on four load bodies. Not the COGITATE experiment. Not a mind.",
     }
+
+
+def ship_gate() -> dict[str, Any]:
+    """Fail closed when H and Y collapse onto one attractor."""
+    ran = rimanakuy()
+    d = ran["diverge"]
+    ready = (
+        d["H_prefers"] == "uniform"
+        and d["Y_prefers"] == "one_hot"
+        and d["same_order"] is False
+    )
+    return {
+        "schema": "szl.ayllu.rimanakuy-gate/v1",
+        "ready": ready,
+        "collapsed": not ready,
+        "H_prefers": d["H_prefers"],
+        "Y_prefers": d["Y_prefers"],
+        "honesty": "MODELED",
+        "agi": "CONJECTURE",
+        "presence": "CONJECTURE",
+        "note": "Ship gate. Collapse of H and Y fails /readyz. Not presence.",
+    }
