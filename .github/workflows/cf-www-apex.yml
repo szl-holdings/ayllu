@@ -1,0 +1,25 @@
+name: cf-www-apex
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/cf_www_apex.py
+      - .github/workflows/cf-www-apex.yml
+
+permissions:
+  contents: read
+
+jobs:
+  redirect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: www to apex 301
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+        run: python scripts/cf_www_apex.py
