@@ -47,3 +47,18 @@ def yuyariy_from(psyche: Any) -> dict[str, Any]:
     from ayllu.psyche.yuyariy import yuyariy
 
     return yuyariy(psyche)
+
+
+def ship_from() -> dict[str, Any]:
+    from ayllu.psyche.rimanakuy import ship_gate
+
+    body = ship_gate()
+    if "pass" not in body and "ready" in body:
+        body = {**body, "pass": body.get("ready")}
+    return body
+
+
+def counsel_eval_from() -> dict[str, Any]:
+    from ayllu.eval.score import evaluate
+
+    return evaluate()
