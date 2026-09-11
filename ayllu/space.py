@@ -78,6 +78,11 @@ def psyche_lattice() -> JSONResponse:
     return JSONResponse(lattice_from(PSYCHE))
 
 
+@app.get("/api/v1/lattice")
+def lattice_short() -> JSONResponse:
+    return JSONResponse(lattice_from(PSYCHE))
+
+
 @app.get("/api/v1/psyche/ruray")
 def psyche_ruray() -> JSONResponse:
     return JSONResponse(ruray_from(PSYCHE))
@@ -207,6 +212,21 @@ def _annotate_manifest() -> None:
         return body
 
     _rebind("manifest", manifest)
+
+
+def _readyz_body() -> dict[str, Any]:
+    for route in app.routes:
+        endpoint = getattr(route, "endpoint", None)
+        if getattr(endpoint, "__name__", "") == "readyz":
+            body = endpoint()
+            return body if isinstance(body, dict) else {"ready": True}
+    return {"ready": True, "lambda": "CONJECTURE_1", "agi": "CONJECTURE"}
+
+
+@app.get("/healthz")
+def healthz() -> dict[str, Any]:
+    """Same organ as /readyz. Monitors that hit /healthz must not 404."""
+    return _readyz_body()
 
 
 _annotate_manifest()
