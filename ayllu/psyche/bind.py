@@ -1,7 +1,7 @@
 """Load-bearing bind. Yuyariy and Kutiy change the next receipt.
 
 Not dashboards. After a closed beat, Yuyariy observations prefix the
-next cue. Kutiy residual is stamped from successive Wiñay snapshots
+next cue. Kutiy residual is stamped from successive Winay snapshots
 without calling beat() from inside beat() (no recursion).
 
 AGI stays CONJECTURE. Presence stays CONJECTURE.
@@ -27,25 +27,27 @@ def _prefix(psyche: Any, cue: str) -> str:
 
 
 def stamp(psyche: Any, ran: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Attach Yuyariy + Kutiy residual to a beat receipt."""
-    from ayllu.psyche.kutiy import _delta, _snapshot
+    """Attach observations; the first beat has no prior comparison evidence."""
+    from ayllu.psyche.kutiy import _delta, _snapshot, observation_status
     from ayllu.psyche.yuyariy import yuyariy
 
     body = yuyariy(psyche)
     psyche.last_yuyariy = body
     after = _snapshot(getattr(psyche, "last_winay", None) or {})
-    before = getattr(psyche, "_kutiy_prev", None) or after
-    gap = _delta(before, after)
+    before = getattr(psyche, "_kutiy_prev", None)
+    gap = _delta(before, after) if isinstance(before, dict) else None
     psyche._kutiy_prev = after
     gate = {
         "schema": "szl.ayllu.kutiy-gate/v1",
-        "honesty": "MODELED",
+        "honesty": "MODELED" if gap is not None else "UNAVAILABLE",
         "delta": gap,
-        "stable": gap < 1e-3,
+        "stable": gap is not None and gap < 1e-3,
+        "observation_status": observation_status(gap),
+        "task_verified": False,
         "consumed": True,
         "agi": "CONJECTURE",
         "presence": "CONJECTURE",
-        "note": "Residual of successive closed beats. Not Huginn. Not extra couple_once.",
+        "note": "Residual of successive closed beats. Not Huginn. Not extra couple_once. Stationarity is not task verification.",
     }
     psyche.last_kutiy_gate = gate
     if isinstance(ran, dict):
