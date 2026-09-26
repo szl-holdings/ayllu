@@ -24,13 +24,18 @@ from ayllu.psyche.neural import (
     zero_w,
 )
 from ayllu.psyche.seats import roster_typed, seat_morphism
-from ayllu.psyche.types import ENERGY, LAMBDA, Bundle, Honesty, Kind, meet
+from ayllu.psyche.types import ENERGY, LAMBDA, Bundle, Honesty, Kind, meet, parse_honesty
 
 
 def test_honesty_lattice_never_upgrades() -> None:
     assert meet(Honesty.MEASURED, Honesty.CONJECTURE) is Honesty.CONJECTURE
     assert meet(Honesty.UNAVAILABLE, Honesty.MEASURED) is Honesty.UNAVAILABLE
     assert Honesty.MEASURED.rank() > Honesty.MODELED.rank()
+    assert parse_honesty(None) is Honesty.UNAVAILABLE
+    assert parse_honesty("") is Honesty.UNAVAILABLE
+    assert parse_honesty("NOT_A_TIER") is Honesty.UNAVAILABLE
+    assert parse_honesty("MEASURED") is Honesty.MEASURED
+    assert parse_honesty(Honesty.REPORTED) is Honesty.REPORTED
 
 
 def test_hebb_recall_recovers_pattern() -> None:
@@ -50,10 +55,26 @@ def test_unavailable_cannot_write() -> None:
     assert y.patterns == []
 
 
+def test_imprint_missing_honesty_is_unavailable() -> None:
+    y = Yuyay()
+    out = y.imprint("secret")
+    assert out["ok"] is False
+    assert out["honesty"] == "UNAVAILABLE"
+    assert y.patterns == []
+
+
+def test_imprint_unknown_honesty_is_unavailable() -> None:
+    y = Yuyay()
+    out = y.imprint("secret", honesty="NOT_A_TIER")
+    assert out["ok"] is False
+    assert out["honesty"] == "UNAVAILABLE"
+    assert y.patterns == []
+
+
 def test_replay_is_measured_and_joules_null() -> None:
     y = Yuyay()
     for s in ("khipu receipt", "human lock fail-closed", "eleven seats one backend"):
-        y.imprint(s)
+        y.imprint(s, honesty=Honesty.MEASURED)
     before = retrieval_fidelity(y.W, y.patterns)["mean"]
     report = y.replay(16)
     assert report["honesty"] == "MEASURED"
@@ -147,7 +168,10 @@ def test_engine_imprint_fail_closed_then_allow() -> None:
     blocked = p.imprint("doctrine lock 749/14/163")
     assert blocked["blocked"] is True
     p.set_lock(True)
-    ok = p.imprint("doctrine lock 749/14/163")
+    missing = p.imprint("doctrine lock 749/14/163")
+    assert missing["ok"] is False
+    assert missing.get("honesty") == "UNAVAILABLE" or missing.get("blocked") is True
+    ok = p.imprint("doctrine lock 749/14/163", honesty="MEASURED")
     assert ok["ok"] is True
     rec = p.recall("doctrine lock")
     assert rec["recall"]["ok"] is True
@@ -192,7 +216,19 @@ def test_psyche_api_operational() -> None:
     locked = c.post("/api/v1/psyche/lock", json={"engaged": True})
     assert locked.status_code == 200
     assert locked.json()["engaged"] is True
-    ok = c.post("/api/v1/psyche/imprint", json={"text": "khipu knot sealed", "human_lock": True})
+    missing = c.post("/api/v1/psyche/imprint", json={"text": "khipu knot sealed", "human_lock": True})
+    assert missing.status_code == 200
+    assert missing.json()["ok"] is False
+    unknown = c.post(
+        "/api/v1/psyche/imprint",
+        json={"text": "khipu knot unknown", "human_lock": True, "honesty": "NOT_A_TIER"},
+    )
+    assert unknown.status_code == 200
+    assert unknown.json()["ok"] is False
+    ok = c.post(
+        "/api/v1/psyche/imprint",
+        json={"text": "khipu knot sealed", "human_lock": True, "honesty": "MEASURED"},
+    )
     assert ok.status_code == 200
     assert ok.json()["ok"] is True
     rec = c.post("/api/v1/psyche/recall", json={"cue": "khipu knot"})

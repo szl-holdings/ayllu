@@ -27,6 +27,7 @@ from ayllu.psyche.types import (
     Decision,
     Honesty,
     Kind,
+    parse_honesty,
 )
 from ayllu.receipts import canonical_dumps, make_receipt, sha3_256_hex
 
@@ -77,10 +78,11 @@ class Psyche:
         envelope = make_receipt({"schema": "szl.ayllu.psyche-receipt/v1", "receipt": body})
         return {"receipt": body, "envelope": envelope}
 
-    def imprint(self, text: str, source: str = "pulse", honesty: str = "MEASURED") -> dict[str, Any]:
+    def imprint(self, text: str, source: str = "pulse", honesty: str | None = None) -> dict[str, Any]:
+        claimed = parse_honesty(honesty)
         gate = self.lock.admit("imprint", state_changing=True)
         if gate["decision"] != Decision.ALLOW.value:
-            minted = self._mint("imprint", "BLOCKED", Honesty.MEASURED.value, {"text": text}, "; ".join(gate["reasons"]))
+            minted = self._mint("imprint", "BLOCKED", claimed.value, {"text": text}, "; ".join(gate["reasons"]))
             return {
                 "schema": SCHEMA,
                 "ok": False,
@@ -91,13 +93,13 @@ class Psyche:
                 "lambda": LAMBDA,
                 "joules": ENERGY,
             }
-        result = self.yuyay.imprint(text, source=source, honesty=Honesty(honesty), digest="")
+        result = self.yuyay.imprint(text, source=source, honesty=claimed, digest="")
         if not result.get("ok"):
-            minted = self._mint("imprint", "BLOCKED", Honesty.MEASURED.value, {"text": text}, str(result.get("error")))
+            minted = self._mint("imprint", "BLOCKED", claimed.value, {"text": text}, str(result.get("error")))
             return {"schema": SCHEMA, "ok": False, "blocked": True, **result, **minted, "lambda": LAMBDA}
         eid = str(len(self.yuyay.texts))
-        self.graph.add_engram(eid, text, source, Honesty(honesty), self.prev_hash)
-        minted = self._mint("imprint", "ALLOW", Honesty.MEASURED.value, {"text": text, "source": source}, "Yuyay imprint.")
+        self.graph.add_engram(eid, text, source, claimed, self.prev_hash)
+        minted = self._mint("imprint", "ALLOW", claimed.value, {"text": text, "source": source}, "Yuyay imprint.")
         self.graph.vertices[f"engram:{eid}"].data["hash"] = minted["receipt"]["hash"]
         return {
             "schema": SCHEMA,

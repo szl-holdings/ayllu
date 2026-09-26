@@ -85,7 +85,9 @@ def main() -> None:
     blocked = mind.imprint("selftest engram")
     assert blocked.get("blocked") is True
     mind.set_lock(True)
-    ok = mind.imprint("selftest engram")
+    missing = mind.imprint("selftest engram")
+    assert missing.get("ok") is False
+    ok = mind.imprint("selftest engram", honesty=Honesty.MEASURED)
     assert ok.get("ok") is True
     x = encode("selftest engram")
     rec = hopfield_classic(mind.yuyay.W, x)

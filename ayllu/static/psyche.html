@@ -213,7 +213,7 @@ document.getElementById("lockbtn").onclick = async () => {
 };
 document.getElementById("imprint").onclick = async () => {
   const text = document.getElementById("note").value;
-  const r = await post("imprint", {text, source:"pulse", human_lock: lockOn});
+  const r = await post("imprint", {text, source:"pulse", honesty:"REPORTED", human_lock: lockOn});
   const d = r.data || {};
   document.getElementById("writeout").textContent = d.blocked ? (d.text || "BLOCKED") : ("sealed · energy "+((d.engram&&d.engram.energy)??"—")+" · "+(d.receipt&&d.receipt.hash||"").slice(0,16));
   if (d.stats) renderStats(d.stats);

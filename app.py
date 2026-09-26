@@ -37,6 +37,7 @@ from ayllu.ouroboros import identity as ouroboros_identity
 from ayllu.ouroboros import tax as ouroboros_tax
 from ayllu.personas import ROSTER, get_persona
 from ayllu.psyche.engine import PSYCHE
+from ayllu.psyche.types import parse_honesty
 from ayllu.receipts import chain_turns, make_receipt, sha256_json
 
 CHAMBER = Path(__file__).resolve().parent / "ayllu" / "static" / "chamber.html"
@@ -405,7 +406,7 @@ async def psyche_imprint(request: Request) -> JSONResponse:
         body = await _bounded_json_body(request)
         text = _clip_prompt(body.get("text") or body.get("prompt") or body.get("q") or "")
         source = str(body.get("source") or "pulse")[:80]
-        honesty = str(body.get("honesty") or "MEASURED")
+        honesty = parse_honesty(body.get("honesty")).value
         if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
             PSYCHE.set_lock(True)
         if body.get("human_lock") is False or body.get("humanLock") is False:

@@ -39,6 +39,21 @@ class Honesty(str, Enum):
         }[self]
 
 
+def parse_honesty(value: Honesty | str | None) -> Honesty:
+    """Missing or unknown honesty is UNAVAILABLE, never MEASURED."""
+    if isinstance(value, Honesty):
+        return value
+    if value is None:
+        return Honesty.UNAVAILABLE
+    raw = str(value).strip()
+    if not raw:
+        return Honesty.UNAVAILABLE
+    try:
+        return Honesty(raw)
+    except ValueError:
+        return Honesty.UNAVAILABLE
+
+
 def meet(*values: Honesty | str) -> Honesty:
     """Greatest lower bound. Composition cannot upgrade honesty."""
     ranked = [Honesty(v) if not isinstance(v, Honesty) else v for v in values] or [Honesty.UNAVAILABLE]
