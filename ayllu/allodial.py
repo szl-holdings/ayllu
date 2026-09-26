@@ -2,6 +2,7 @@
 
 Pushed as a frontier onto Ayllu Counsel without replacing the eleven seats.
 """
+from ayllu.grok_model import DEFAULT_GROK_MODEL
 
 FORMULA = "A = [sum w_k * SEAL_k / 4] * (1 - DCI) * 100"
 DCI = 0.41
@@ -25,7 +26,7 @@ DIMENSIONS = [
         "label": "Inference compute",
         "seal": 1,
         "honesty": "REPORTED",
-        "basis": "Space infers on grok-4.5 via xAI when XAI_API_KEY is set. Third-party compute. Not sovereign metal.",
+        "basis": f"Space infers on {DEFAULT_GROK_MODEL} via xAI when XAI_API_KEY is set. Third-party compute. Not sovereign metal.",
     },
     {
         "id": "data_residency",

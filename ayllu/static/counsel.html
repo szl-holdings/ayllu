@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Ayllu Counsel — Legal Matter Command</title>
-<meta name="description" content="Legal Matter Command. Live Federal Register + CourtListener through a11oy. grok-4.5 inferences. SHA3-256 UNSIGNED-honest receipts. Continuance of retired Counsel. Λ = Conjecture 1."/>
+<meta name="description" content="Legal Matter Command. Live Federal Register + CourtListener through a11oy. Grok inferences. SHA3-256 UNSIGNED-honest receipts. Continuance of retired Counsel. Λ = Conjecture 1."/>
 <style>
 :root{
   --void:#03060c;--panel:rgba(8,16,26,.86);--line:#1b2a38;
@@ -103,10 +103,10 @@ button:disabled{opacity:.5;cursor:wait}
       <textarea id="q" placeholder="State the matter. Never ask this surface to act as licensed counsel. Citations stay unverified."></textarea>
       <div class="row">
         <label class="lock"><input type="checkbox" id="lock"/> Human Lock</label>
-        <button type="button" id="run">Run grok-4.5</button>
+        <button type="button" id="run">Run Grok</button>
         <button type="button" class="ghost" id="refresh">Refresh docket</button>
       </div>
-      <p class="note">High-risk actions fail-closed without Human Lock. grok-4.5 is user-initiated. Empty XAI_API_KEY → honest UNAVAILABLE.</p>
+      <p class="note">High-risk actions fail-closed without Human Lock. Grok is user-initiated. Empty XAI_API_KEY → honest UNAVAILABLE.</p>
       <div id="ans" class="ans">Awaiting a matter.</div>
       <div id="rec" class="hash"></div>
     </section>
@@ -164,6 +164,8 @@ async function boot(){
   const est = s.estate || {};
   document.getElementById("k-hf").textContent = est.ok ? String(est.models ?? "—") : "—";
   document.getElementById("s-hf").textContent = est.ok ? "REPORTED" : "UNAVAILABLE";
+  // Server-resolved model label (reviewed pin or allowlisted override).
+  if (s.grok_model_label) document.getElementById("run").textContent = "Run " + s.grok_model_label;
   const mode = (health.data && health.data.backend && health.data.backend.mode) || (s.xai_key_present ? "live" : "software");
   const badge = document.getElementById("mode");
   badge.textContent = String(mode).toUpperCase();

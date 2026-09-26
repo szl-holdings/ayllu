@@ -113,7 +113,6 @@ def main() -> int:
         print("secret XAI_API_KEY set")
     else:
         print("XAI_API_KEY UNAVAILABLE — backend stays SOFTWARE")
-    api.add_space_variable(HF, "AYLLU_MODEL", "grok-4.5")
     print("page", PAGE)
     print("runtime", HOST)
     deadline = time.time() + 600

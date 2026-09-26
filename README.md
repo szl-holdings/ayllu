@@ -42,7 +42,7 @@ This organ is the continuance. The eleven seats are not deleted.
 | Surface | What it is |
 |---|---|
 | `GET /` | 0-CDN holographic council chamber |
-| `GET /counsel` | Legal Matter Command — live docket, Allodial, grok-4.5, Human Lock |
+| `GET /counsel` | Legal Matter Command — live docket, Allodial, Grok 4.7, Human Lock |
 | `GET /psyche` | Neural-symbolic psyche — imprint, dual Hopfield recall, replay, Tinku compose |
 | `GET /api/v1/psyche/health` | OPERATIONAL neural + 11 seats + lock. Q/F/Y/X MODELED. φ_s UNAVAILABLE |
 | `POST /api/v1/psyche/imprint` | Hebb+Oja+BCM write. Fail-closed Human Lock. UNAVAILABLE cannot write |
@@ -57,7 +57,7 @@ This organ is the continuance. The eleven seats are not deleted.
 | `GET /api/v1/counsel/docket` | live Federal Register + CourtListener via a11oy |
 | `GET /api/v1/counsel/estate` | live SZLHOLDINGS Hub scrape |
 | `GET /api/v1/counsel/allodial` | experimental MODELED composite (not locked-8) |
-| `POST /api/v1/counsel/infer` | grok-4.5 matter brief; fail-closed Human Lock |
+| `POST /api/v1/counsel/infer` | Grok 4.7 matter brief; fail-closed Human Lock |
 | `GET /api/v1/ayllu/manifest` | machine-readable contract |
 | `GET /api/v1/ayllu/anatomy` | five SOFTWARE organs (inner ring) |
 | `GET /api/v1/ayllu/second-brain` | compound-model state; public 575-chunk index stats when corpus is present |
@@ -72,7 +72,7 @@ is **NOT_MEASURED**. Honest dissent is first-class.
 
 Backend honesty:
 
-- **LIVE** — grok-4.5 when `XAI_API_KEY` is set, else a reachable OpenAI-compatible endpoint (CHASKI-R2 `:8098` or Ollama `:11434`). Text is still unverified model output.
+- **LIVE** — `grok-4.7` (the reviewed pin, `ayllu/grok_model.py`) when `XAI_API_KEY` is set, else a reachable OpenAI-compatible endpoint (CHASKI-R2 `:8098` or Ollama `:11434`). Text is still unverified model output.
 - **SOFTWARE** — no reachable live backend. The seat still speaks from its remit, clearly labeled, never fabricated as LIVE.
 - **UNAVAILABLE** — a scrape or key is missing. Never upgraded to LIVE.
 
@@ -90,8 +90,16 @@ Optional live backend:
 
 ```
 set XAI_API_KEY=...
-set AYLLU_MODEL=grok-4.5
+rem Optional, server-side only. Empty uses the reviewed pin (grok-4.7).
+set SZL_GROK_MODEL=
 ```
+
+The xAI model is pinned once in `ayllu/grok_model.py` (`DEFAULT_GROK_MODEL`).
+`SZL_GROK_MODEL` may select only an id in `ALLOWED_GROK_MODELS` (the pin and
+the reviewed rollback target `grok-4.5`). Any other value fails closed: Counsel
+returns UNAVAILABLE, the seats stay SOFTWARE, and no request is sent to xAI.
+`AYLLU_MODEL` is not read on the xAI path; it still names the model for
+CHASKI-R2, Ollama and `OPENAI_BASE_URL` backends.
 
 On the Hugging Face Space, set `XAI_API_KEY` as a Space secret so Counsel
 and the eleven seats answer LIVE. Absent the key, answers stay SOFTWARE.
