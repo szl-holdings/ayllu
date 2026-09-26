@@ -13,7 +13,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Any, Sequence
 
-from ayllu.psyche.types import ENERGY, ETA_GAIN, Honesty, LAMBDA, meet
+from ayllu.psyche.types import ENERGY, ETA_GAIN, Honesty, LAMBDA, meet, parse_honesty
 
 DIM = 64
 SPARSE_K = 12
@@ -369,15 +369,15 @@ class Yuyay:
         self,
         text: str,
         source: str = "pulse",
-        honesty: Honesty | str = Honesty.MEASURED,
+        honesty: Honesty | str | None = None,
         digest: str = "",
     ) -> dict[str, Any]:
         raw = (text or "").strip()
+        h = parse_honesty(honesty)
         if not raw:
-            return {"ok": False, "error": "Empty engram.", "honesty": Honesty.MEASURED.value}
+            return {"ok": False, "error": "Empty engram.", "honesty": h.value}
         if raw in self.texts:
-            return {"ok": False, "error": "Already imprinted.", "honesty": Honesty.MEASURED.value}
-        h = Honesty(honesty)
+            return {"ok": False, "error": "Already imprinted.", "honesty": h.value}
         if ETA_GAIN[h] <= 0:
             return {
                 "ok": False,
