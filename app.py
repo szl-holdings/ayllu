@@ -24,6 +24,7 @@ from ayllu import backend as _backend
 from ayllu import counsel as _counsel
 from ayllu.converge import synthesize
 from ayllu.estate import catalog
+from ayllu.grok_model import DEFAULT_GROK_MODEL
 from ayllu.hatun import status as hatun_status
 from ayllu.invariants import catalog as invariants_catalog
 from ayllu.invariants import check as check_invariants
@@ -334,7 +335,7 @@ def counsel_leaders() -> dict[str, Any]:
     return {
         "schema": "szl.ayllu.counsel-leaders/v1",
         "leaders": _counsel.LEADERS,
-        "honesty": "Studied, not copied. OPERATIONAL local scans; grok-4.5 only on user submit.",
+        "honesty": f"Studied, not copied. OPERATIONAL local scans; {DEFAULT_GROK_MODEL} only on user submit.",
         "lambda": "CONJECTURE_1",
     }
 

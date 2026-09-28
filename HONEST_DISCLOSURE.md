@@ -9,7 +9,7 @@
 | Council effectiveness | NOT_MEASURED |
 | Receipt signatures | UNSIGNED unless a Cosign signer is injected; never fabricated |
 | Λ uniqueness | CONJECTURE 1 — never a theorem, never green |
-| LIVE model answers | grok-4.5 when `XAI_API_KEY` is set and reachable; else CHASKI-R2 `:8098`, Ollama, or `OPENAI_BASE_URL` |
+| LIVE model answers | `grok-4.7` (reviewed pin; `SZL_GROK_MODEL` may select only the allowlisted rollback `grok-4.5`, any other value fails closed) when `XAI_API_KEY` is set and reachable; else CHASKI-R2 `:8098`, Ollama, or `OPENAI_BASE_URL` |
 | Legal Matter Command `/counsel` | OPERATIONAL runtime. Live a11oy legal vertical is REPORTED when the scrape answers; otherwise UNAVAILABLE |
 | Legal / filing authority | PROPOSAL_ONLY. Informational. Not a law firm. Human Lock fail-closed. |
 | Production grade | Runtime OPERATIONAL on occupied Space routes. Not executive authority. Not AGI. |

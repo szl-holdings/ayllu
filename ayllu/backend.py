@@ -2,7 +2,7 @@
 
 Probe order (first reachable live path wins):
 
-0. XAI_API_KEY → https://api.x.ai/v1  (grok-4.5) — Space LIVE path
+0. XAI_API_KEY → https://api.x.ai/v1  (Grok, pinned in ayllu.grok_model) — Space LIVE path
 1. AYLLU_OPENAI_BASE (default http://127.0.0.1:8098/v1) — CHASKI-R2 OpenAI-compat
 2. OLLAMA_HOST OpenAI-compat (default http://127.0.0.1:11434/v1)
 3. OPENAI_BASE_URL if explicitly set
@@ -10,6 +10,12 @@ Probe order (first reachable live path wins):
 If none of those answer, `model_complete` returns a clearly-labeled SOFTWARE
 advisory from the persona domain. It NEVER fabricates LIVE, never pretends a
 missing backend answered, and never claims verified truth.
+
+The xAI model id comes only from `ayllu.grok_model.grok_model()`
+(SZL_GROK_MODEL if it is in ALLOWED_GROK_MODELS, else the reviewed pin).
+An override outside the allowlist fails closed to SOFTWARE with no xAI
+request. `AYLLU_MODEL` is not read on the xAI path; it still selects the
+model for CHASKI-R2, Ollama and OpenAI-compatible backends.
 
 This module does not import a11oy. The a11oy organ still exists; this is the
 product split-out.
@@ -23,6 +29,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Optional
 
+from ayllu.grok_model import DEFAULT_GROK_MODEL, grok_label, grok_model, rejected_hint
 from ayllu.second_brain import is_maskaq, navigator_context
 
 DEFAULT_OPENAI = os.environ.get("AYLLU_OPENAI_BASE", "http://127.0.0.1:8098/v1").rstrip("/")
@@ -93,6 +100,7 @@ def _probe_openai(base: str) -> dict[str, Any]:
 
 
 def _probe_xai() -> dict[str, Any]:
+    model = grok_model()
     key = (os.environ.get("XAI_API_KEY") or "").strip()
     if not key:
         return {
@@ -100,7 +108,19 @@ def _probe_xai() -> dict[str, Any]:
             "reachable": False,
             "http_status": 0,
             "hint": "XAI_API_KEY absent — no LIVE grok fabricated.",
-            "model": "grok-4.5",
+            "model": model,
+        }
+    if model is None:
+        # SZL_GROK_MODEL outside ALLOWED_GROK_MODELS: fail closed without
+        # contacting xAI at all (not even the /models probe).
+        return {
+            "base": XAI_BASE,
+            "reachable": False,
+            "http_status": 0,
+            "hint": rejected_hint(),
+            "model": None,
+            "model_rejected": True,
+            "key_present": True,
         }
     status, body = _get(f"{XAI_BASE}/models", timeout=4.0, bearer=key)
     return {
@@ -108,7 +128,7 @@ def _probe_xai() -> dict[str, Any]:
         "reachable": status == 200,
         "http_status": status,
         "hint": "ok" if status == 200 else body[:180],
-        "model": "grok-4.5",
+        "model": model,
         "key_present": True,
     }
 
@@ -131,7 +151,11 @@ def backend_status() -> dict[str, Any]:
     explicit = os.environ.get("OPENAI_BASE_URL", "").rstrip("/")
     explicit_probe = _probe_openai(explicit) if explicit else None
 
-    if xai["reachable"]:
+    if xai.get("model_rejected"):
+        # The operator asked for xAI (key present) with an unreviewed model
+        # id. Fail closed to SOFTWARE; do not reroute to another backend.
+        mode, chosen = "software", None
+    elif xai["reachable"]:
         mode, chosen = "live", {"kind": "xai-grok", **xai}
     elif chaski["reachable"]:
         mode, chosen = "live", {"kind": "chaski-r2", **chaski}
@@ -146,6 +170,25 @@ def backend_status() -> dict[str, Any]:
     else:
         mode, chosen = "software", None
 
+    if xai.get("model_rejected"):
+        note = (
+            "SZL_GROK_MODEL outside ALLOWED_GROK_MODELS — fail-closed SOFTWARE "
+            "advisory. No xAI request sent; no silent fallback to another model "
+            "or backend."
+        )
+    else:
+        note = {
+            "live": (
+                "real model answers via a reachable OpenAI-compatible endpoint "
+                f"({grok_label(xai.get('model'))} when XAI_API_KEY is set). "
+                "Outputs remain unverified model text — not MEASURED truth."
+            ),
+            "software": (
+                "no reachable live backend — clearly-labeled SOFTWARE advisory "
+                "from persona domain. No fabrication of LIVE."
+            ),
+        }.get(mode, "")
+
     return {
         "mode": mode,
         "chosen": chosen,
@@ -156,17 +199,7 @@ def backend_status() -> dict[str, Any]:
             "ollama_tags_http": ollama_tags_status,
             "explicit_openai": explicit_probe,
         },
-        "note": {
-            "live": (
-                "real model answers via a reachable OpenAI-compatible endpoint "
-                "(grok-4.5 when XAI_API_KEY is set). Outputs remain unverified "
-                "model text — not MEASURED truth."
-            ),
-            "software": (
-                "no reachable live backend — clearly-labeled SOFTWARE advisory "
-                "from persona domain. No fabrication of LIVE."
-            ),
-        }.get(mode, ""),
+        "note": note,
         "backend": "ayllu.backend.model_complete",
         "lambda": "CONJECTURE_1",
     }
@@ -187,7 +220,7 @@ def software_complete(system: str, prompt: str, *, persona: Optional[str] = None
         "- I will not invent a LIVE completion, a signature, a joule, or a proven Λ.\n"
         "- I stay inside my remit; questions outside it belong to another seat.\n"
         "- Honest dissent beats false consensus.\n"
-        "- If you set XAI_API_KEY (grok-4.5), or wire CHASKI-R2 on :8098 / Ollama on :11434, "
+        f"- If you set XAI_API_KEY ({grok_label(DEFAULT_GROK_MODEL)}), or wire CHASKI-R2 on :8098 / Ollama on :11434, "
         "this seat answers LIVE and still remains unverified model text.\n"
         "I don't know anything I have not grounded in a receipt."
     )
@@ -357,7 +390,20 @@ async def model_complete(
     bearer: str | None = None
     if kind == "xai-grok":
         url = f"{XAI_BASE}/chat/completions"
-        model = os.environ.get("AYLLU_MODEL", "grok-4.5")
+        # AYLLU_MODEL is deliberately not read here: the xAI id is the
+        # reviewed pin or an allowlisted SZL_GROK_MODEL, nothing else.
+        resolved = grok_model()
+        if resolved is None:
+            out = software_complete(system, user_prompt, persona=persona)
+            out["token_budget"] = bounded_tokens
+            out["timeout_s"] = bounded_timeout
+            out["honesty"] = (
+                f"SOFTWARE fallback — {rejected_hint()} No LIVE answer fabricated."
+            )
+            if grounding is not None:
+                out["grounding"] = grounding
+            return out
+        model = resolved
         bearer = (os.environ.get("XAI_API_KEY") or "").strip() or None
     elif kind == "chaski-r2":
         url = f"{DEFAULT_OPENAI}/chat/completions"

@@ -6,6 +6,7 @@ never a claim that a remote Space is LIVE unless this process probed it.
 from __future__ import annotations
 
 from ayllu import SCHEMA_COUNCIL, __version__
+from ayllu.grok_model import DEFAULT_GROK_MODEL
 
 ORIGINS = {
     "product": "https://a-11-oy.com",
@@ -28,7 +29,7 @@ CONSOLIDATED = [
         "name": "Legal Matter Command",
         "kind": "counsel organ",
         "origin": "this repository /counsel",
-        "honesty": "Live a11oy legal vertical + grok-4.5 when XAI_API_KEY is set. Human Lock fail-closed. Continuance of retired Counsel, not a deletion.",
+        "honesty": f"Live a11oy legal vertical + {DEFAULT_GROK_MODEL} when XAI_API_KEY is set. Human Lock fail-closed. Continuance of retired Counsel, not a deletion.",
         "urls": [
             "https://huggingface.co/spaces/SZLHOLDINGS/ayllu",
             "https://a-11-oy.com/api/a11oy/v1/vert/legal",

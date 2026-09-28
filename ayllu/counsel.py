@@ -2,8 +2,9 @@
 
 Instilled into Ayllu without deleting the eleven seats, holographic chamber,
 or existing council APIs. Live scrapes a-11-oy.com legal vertical and the
-SZLHOLDINGS Hub. grok-4.5 when XAI_API_KEY is present. Fail-closed Human Lock
-on high-risk actions. SHA3-256 UNSIGNED-honest receipts.
+SZLHOLDINGS Hub. Grok (the reviewed pin in ayllu.grok_model) when XAI_API_KEY
+is present. Fail-closed Human Lock on high-risk actions. SHA3-256
+UNSIGNED-honest receipts.
 
 Informational only. Not legal advice. Not a law firm. Λ = Conjecture 1.
 """
@@ -19,12 +20,12 @@ import uuid
 from typing import Any
 
 from ayllu.allodial import score as allodial_score
+from ayllu.grok_model import DEFAULT_GROK_MODEL, grok_label, grok_model, rejected_hint
 from ayllu.receipts import make_receipt, sha3_256_hex, canonical_dumps
 
 A11OY = "https://a-11-oy.com"
 HF = "https://huggingface.co/api"
 XAI = "https://api.x.ai/v1"
-MODEL = "grok-4.5"
 GENESIS = "0" * 64
 DISCLAIMER = (
     "Informational only. Does not constitute legal advice. Not a law firm. "
@@ -97,7 +98,7 @@ LEADERS = [
         "id": "GUARD",
         "title": "Guard",
         "class_hint": "Guardrails / Lakera-class — studied, not copied",
-        "function": "Input tripwires before grok-4.5. Local scan always; model second-pass on submit.",
+        "function": f"Input tripwires before {grok_label(DEFAULT_GROK_MODEL)}. Local scan always; model second-pass on submit.",
         "status": "OPERATIONAL",
         "honesty_tier": "MEASURED",
         "local": True,
@@ -319,9 +320,20 @@ def grok_complete(system: str, prompt: str, max_tokens: int = 480) -> dict[str, 
             "honesty": "UNAVAILABLE",
             "model": None,
         }
+    # Resolved per call: SZL_GROK_MODEL (allowlisted) or the reviewed pin.
+    # None means the override is outside ALLOWED_GROK_MODELS: fail closed
+    # before any request is built or sent.
+    model = grok_model()
+    if model is None:
+        return {
+            "ok": False,
+            "text": f"UNAVAILABLE — {rejected_hint()} No LIVE answer fabricated.",
+            "honesty": "UNAVAILABLE",
+            "model": None,
+        }
     payload = json.dumps(
         {
-            "model": MODEL,
+            "model": model,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": (prompt or "")[:6000]},
@@ -345,7 +357,7 @@ def grok_complete(system: str, prompt: str, max_tokens: int = 480) -> dict[str, 
         text = data["choices"][0]["message"]["content"]
         if not str(text).strip():
             return {"ok": False, "text": "UNAVAILABLE — empty completion.", "honesty": "UNAVAILABLE", "model": None}
-        return {"ok": True, "text": text, "honesty": "CONJECTURE", "model": MODEL}
+        return {"ok": True, "text": text, "honesty": "CONJECTURE", "model": model}
     except Exception as exc:  # noqa: BLE001
         return {
             "ok": False,
@@ -511,7 +523,7 @@ def infer(
         payload={"action": action, "prompt": text},
         model=result["model"],
         reason=(
-            "Live grok-4.5 completion. Unverified. Informational only."
+            f"Live {result['model']} completion. Unverified. Informational only."
             if result["ok"]
             else result["text"]
         ),
@@ -529,6 +541,7 @@ def infer(
 
 
 def snapshot() -> dict[str, Any]:
+    model = grok_model()
     docket = legal_docket(8)
     health = organ_health()
     estate = hub_estate()
@@ -559,6 +572,9 @@ def snapshot() -> dict[str, Any]:
         "allodial": allo,
         "leaders": LEADERS,
         "xai_key_present": bool((os.environ.get("XAI_API_KEY") or "").strip()),
+        # Resolved xAI model id (None: SZL_GROK_MODEL outside the allowlist).
+        "grok_model": model,
+        "grok_model_label": grok_label(model) if model else None,
         "lambda": "CONJECTURE_1",
         "continuance": (
             "Retired Counsel (platform/artifacts/counsel) is SUPERSEDED and retained. "
