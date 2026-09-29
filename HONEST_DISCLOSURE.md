@@ -3,7 +3,7 @@
 | Claim | Status |
 |---|---|
 | 11 personas with soul prose | MEASURED by `python -m ayllu.selftest` |
-| Fail-closed autonomy gate | MEASURED (state-change denied without attestation) |
+| Fail-closed autonomy gate | MEASURED (state-change denied without attestation; a supplied Λ that is NaN, ±Inf, outside [0, 1] or not a number is denied with its szl.lambda/v1 code, `tests/test_autonomy_fail_closed.py`). An absent Λ is an annotated advisory, not a check. |
 | Debate bounded to exactly two rounds | SOFTWARE (code path after arXiv:2305.14325) |
 | Semantic consensus | NOT_MEASURED |
 | Council effectiveness | NOT_MEASURED |
