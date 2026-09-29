@@ -2,6 +2,12 @@
 
 Every URL is a public origin. Health is REPORTED from this process only —
 never a claim that a remote Space is LIVE unless this process probed it.
+
+A Hugging Face URL is listed only while that repo exists on the Hub. Retired
+Spaces (lambda-gate-holo, governed-norm-holo, hatun-mcp, anatomy,
+second-brain: absent from https://huggingface.co/api/spaces?author=SZLHOLDINGS
+on 2026-09-29) are not advertised here; their GitHub source is linked instead
+where the source repository is still active.
 """
 from __future__ import annotations
 
@@ -57,20 +63,6 @@ CONSOLIDATED = [
         "urls": ["https://huggingface.co/SZLHOLDINGS/chaski"],
     },
     {
-        "name": "Λ gate hologram",
-        "kind": "hologram",
-        "origin": "https://github.com/szl-holdings/lambda-gate-holo",
-        "honesty": "Λ = Conjecture 1, never a theorem, never green.",
-        "urls": ["https://huggingface.co/spaces/SZLHOLDINGS/lambda-gate-holo"],
-    },
-    {
-        "name": "Governed-norm hologram",
-        "kind": "hologram",
-        "origin": "https://github.com/szl-holdings/governed-norm-holo",
-        "honesty": "Inspectable WILLAY refusal classifiers. Honest REPORTED/UNAVAILABLE.",
-        "urls": ["https://huggingface.co/spaces/SZLHOLDINGS/governed-norm-holo"],
-    },
-    {
         "name": "Khipu",
         "kind": "receipt chain",
         "origin": "https://github.com/szl-holdings/szl-khipu",
@@ -88,8 +80,8 @@ CONSOLIDATED = [
         "name": "Living anatomy",
         "kind": "organism",
         "origin": "https://github.com/szl-holdings/anatomy",
-        "honesty": "Five organs instilled into Ayllu as a SOFTWARE map. 3D Space is separate.",
-        "urls": ["https://huggingface.co/spaces/SZLHOLDINGS/anatomy"],
+        "honesty": "Five organs instilled into Ayllu as a SOFTWARE map. GitHub source; the Hub Space is retired.",
+        "urls": ["https://github.com/szl-holdings/anatomy"],
     },
     {
         "name": "Second Brain",
@@ -100,17 +92,7 @@ CONSOLIDATED = [
             "Handles only. YACHAY organ. Never the private 9464-node graph. "
             "Does not overwrite SZLHOLDINGS/SZL-Khipu-1.5B-BrainNavigator."
         ),
-        "urls": [
-            "https://huggingface.co/spaces/SZLHOLDINGS/second-brain",
-            "https://github.com/szl-holdings/szl-second-brain",
-        ],
-    },
-    {
-        "name": "Hatun MCP",
-        "kind": "mcp gateway",
-        "origin": "https://github.com/szl-holdings/hatun-mcp",
-        "honesty": "healthz is process liveness. tools/list not fabricated.",
-        "urls": ["https://huggingface.co/spaces/SZLHOLDINGS/hatun-mcp"],
+        "urls": ["https://github.com/szl-holdings/szl-second-brain"],
     },
     {
         "name": "Ouroboros",

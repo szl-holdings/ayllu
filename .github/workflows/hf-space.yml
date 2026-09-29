@@ -1,4 +1,26 @@
 name: hf-space
+
+# The single Hub writer for the Hugging Face Space SZLHOLDINGS/ayllu.
+#
+# plan     reads .hf-space.json (smoke paths, wait budget), records the Hub head
+#          before this run, and FAILS when the publisher credential is absent.
+#          A missing credential is never a skip.
+# deploy   szl-holdings/.github reusable-hf-deploy.yml, pinned by commit sha:
+#          derives the file set from Dockerfile COPY sources, requires ref to be
+#          the exact main tip, commits once, waits for RUNNING at that commit,
+#          re-fetches every pushed byte, and probes the smoke paths (/healthz
+#          first).
+# receipt  reads the Hub back anonymously and fails unless hub_oid ==
+#          created_oid, runtime.sha == created_oid in RUNNING, and /healthz is
+#          HTTP 200. Uploads the receipt as the hf-space-receipt artifact.
+#
+# Auth: the pinned reusable accepts only a token secret (HF_TOKEN), so this
+# run records auth=PAT. Trusted Publisher OIDC needs a reusable revision that
+# accepts it plus a Hub-side publisher registration for this Space.
+#
+# Lock: one workflow-level group per Hub asset (hf-write/<type>/<id>), never
+# keyed by event, so push and dispatch runs serialize against each other.
+
 on:
   push:
     branches: [main]
@@ -7,33 +29,112 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: hf-write/space/SZLHOLDINGS/ayllu
+  cancel-in-progress: false
+
+env:
+  HF_SPACE: SZLHOLDINGS/ayllu
+
 jobs:
-  publish:
+  plan:
+    name: Read the Space contract and require the publisher credential
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      smoke_paths: ${{ steps.contract.outputs.smoke_paths }}
+      wait_running: ${{ steps.contract.outputs.wait_running }}
+      hub_oid_before: ${{ steps.contract.outputs.hub_oid_before }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
-          python-version: "3.12"
-      - run: python -m pip install --disable-pip-version-check "huggingface_hub==1.19.0"
-      - name: Push Docker Space SZLHOLDINGS/ayllu
+          egress-policy: audit
+
+      - name: Require the publisher credential (fail closed)
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_TOKEN_PRESENT: ${{ secrets.HF_TOKEN != '' }}
         run: |
-          python - <<'PY'
-          import os, sys
-          token = os.environ.get("HF_TOKEN") or ""
-          if not token:
-              print("HF_TOKEN UNAVAILABLE — Space publish skipped. Not fabricated LIVE.")
-              sys.exit(0)
-          from huggingface_hub import HfApi
-          api = HfApi(token=token)
-          # Space already exists. create_repo hits Hub space-creation rate limit (20/day).
-          api.upload_folder(
-              folder_path=".",
-              repo_id="SZLHOLDINGS/ayllu",
-              repo_type="space",
-              ignore_patterns=[".git*", "tests/*", ".venv/*", ".pytest_cache/*", "**/__pycache__/*", "**/*.pyc"],
-          )
-          print("published SZLHOLDINGS/ayllu")
-          PY
+          if [ "$HF_TOKEN_PRESENT" != "true" ]; then
+            echo "::error::HF_TOKEN is not configured for ${GITHUB_REPOSITORY}. ${HF_SPACE} is NOT published and this run fails; it does not skip."
+            exit 2
+          fi
+          echo "publisher credential present (value not printed)"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate .hf-space.json and record the Hub head
+        id: contract
+        run: >-
+          python3 -I scripts/hf_space_receipt.py contract
+          --contract .hf-space.json
+          --space "$HF_SPACE"
+          --github-repo "$GITHUB_REPOSITORY"
+          --github-output "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy the Dockerfile COPY set
+    needs: plan
+    uses: szl-holdings/.github/.github/workflows/reusable-hf-deploy.yml@1b3255219cd1d5fa7ac850195b18fc907cac2cbf
+    with:
+      hf-repo: SZLHOLDINGS/ayllu
+      ref: ${{ github.sha }}
+      require-default-branch-tip: true
+      dockerfile-path: Dockerfile
+      include-readme: true
+      prune: true
+      wait-running: ${{ fromJSON(needs.plan.outputs.wait_running) }}
+      smoke-paths: ${{ needs.plan.outputs.smoke_paths }}
+    secrets:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+  receipt:
+    name: Read back the Hub and mint the deploy receipt
+    needs: [plan, deploy]
+    # Also after a failed deploy, so a FAIL receipt records what the Hub shows.
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the deploy manifest
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: hf-deploy-evidence
+          path: evidence
+
+      - name: Require hub_oid == created_oid, RUNNING and /healthz 200
+        env:
+          HUB_OID_BEFORE: ${{ needs.plan.outputs.hub_oid_before }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: >-
+          python3 -I scripts/hf_space_receipt.py receipt
+          --manifest evidence/hf-deploy-manifest.json
+          --space "$HF_SPACE"
+          --github-repo "$GITHUB_REPOSITORY"
+          --source-sha "$GITHUB_SHA"
+          --hub-oid-before "$HUB_OID_BEFORE"
+          --run-url "$RUN_URL"
+          --auth PAT
+          --lock hf-write/space/SZLHOLDINGS/ayllu
+          --out hf-space-receipt.json
+          --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the deploy receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hf-space-receipt
+          path: hf-space-receipt.json
+          if-no-files-found: error
+          retention-days: 90
