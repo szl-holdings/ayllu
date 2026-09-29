@@ -1,7 +1,12 @@
 """Fail-closed morphisms (Tinku).
 
 Objects are honesty-typed remits. Morphisms cannot upgrade honesty.
-Composition is associative. BLOCKED is absorbing.
+Composition is associative in the arrows it walks: (f∘g)∘h and f∘(g∘h)
+apply f, g, h in the same order. BLOCKED is absorbing: a composite keeps
+each operand's own gate, so composing never removes a block. (When an arrow
+re-stamps remit, the two groupings hold different inner composites whose
+remit gates see different bundles, so one grouping can block where the other
+allows. Neither grouping ever drops a gate.)
 State-changing arrows require Human Lock.
 
 This is Ayllu's composition law — typed, fail-closed, receipted.
@@ -65,8 +70,10 @@ class Arrow:
 class Morphism:
     """A typed arrow. Either a leaf (`fn`) or a composite (`parts`), never both.
 
-    A composite is evaluated by walking its parts, exactly as `run_pipeline`
-    does, so a block anywhere inside it is the composite's decision.
+    A composite first runs its own gate on its input, then walks its parts
+    exactly as `run_pipeline` does, so a block anywhere inside it is the
+    composite's decision. `then()` keeps both operands whole, so every
+    operand's own gate runs on the same bundle it would see alone.
     """
 
     name: str
@@ -125,8 +132,10 @@ class Morphism:
             state_changing=self.state_changing or other.state_changing,
             lock_required=self.lock_required or other.lock_required,
             remit=other.remit if other.remit != "any" else self.remit,
-            # Flattened, so (f∘g)∘h and f∘(g∘h) walk the same parts.
-            parts=(self.parts or (self,)) + (other.parts or (other,)),
+            # Each operand stays whole, never flattened: a composite's own gate can be
+            # stricter than its parts (built by hand, or a remit an inner arrow
+            # re-stamps), and flattening would drop it.
+            parts=(self, other),
         )
 
 
