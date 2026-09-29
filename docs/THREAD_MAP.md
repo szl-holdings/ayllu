@@ -50,6 +50,9 @@ Personas are roles on one routed backend. Not eleven weight files.
 
 ## How to occupy / republish
 
+Republish = merge to `main`, or `gh workflow run hf-space.yml --ref main`.
+That workflow is the only Hub writer; the scripts below only read and verify.
+
 ```bash
 cd ayllu && python scripts/ayllu_occupy.py
 python scripts/ayllu_sovereign.py

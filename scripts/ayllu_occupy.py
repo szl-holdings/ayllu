@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
-"""Occupy SZLHOLDINGS/ayllu from this checkout.
+"""Verify the SZLHOLDINGS/ayllu occupancy from outside. Read-only.
 
-HF_TOKEN required. XAI_API_KEY optional.
+This script never writes the Hub and needs no token. The only writer of the
+Space is .github/workflows/hf-space.yml (reusable-hf-deploy, lock
+hf-write/space/SZLHOLDINGS/ayllu), which runs on every push to main. To
+publish, merge to main or dispatch that workflow.
+
+Space secrets such as XAI_API_KEY are owner settings on the Hub; this script
+does not set them. Absent XAI_API_KEY, the backend stays SOFTWARE.
+
 Never fabricates LIVE. Λ = Conjecture 1.
 Runtime OPERATIONAL. Legal authority PROPOSAL_ONLY.
 """
 from __future__ import annotations
 
 import json
-import os
-import sys
 import time
 import urllib.error
 import urllib.request
-
-from huggingface_hub import HfApi
-from huggingface_hub.utils import HfHubHTTPError
 
 HF = "SZLHOLDINGS/ayllu"
 HOST = "https://SZLHOLDINGS-ayllu.hf.space"
@@ -68,51 +70,23 @@ def post(url: str, payload: dict, timeout: int = 30):
         return 0, str(err).encode()
 
 
-def main() -> int:
-    token = os.environ.get("HF_TOKEN") or ""
-    if not token:
-        print("HF_TOKEN UNAVAILABLE — Hub occupancy ROADMAP. Not fabricated LIVE.")
-        return 2
-    api = HfApi(token=token)
+def space_info() -> dict | None:
+    """Anonymous Space API read. None when the Hub does not answer with JSON."""
     try:
-        info = api.repo_info(repo_id=HF, repo_type="space")
-        print(f"REPORTED space exists id={info.id}")
-    except HfHubHTTPError as exc:
-        code = exc.response.status_code if exc.response is not None else 0
-        print(f"repo_info status={code} — creating Docker Space")
-        try:
-            api.create_repo(
-                repo_id=HF,
-                repo_type="space",
-                space_sdk="docker",
-                exist_ok=True,
-                private=False,
-            )
-            print("created", HF)
-        except HfHubHTTPError as create_exc:
-            print("create_repo FAILED. Rate limit? Keep the name ayllu.")
-            print(create_exc)
-            return 3
-    api.upload_folder(
-        folder_path=".",
-        repo_id=HF,
-        repo_type="space",
-        ignore_patterns=[
-            ".git*",
-            "tests/*",
-            ".venv/*",
-            ".pytest_cache/*",
-            "**/__pycache__/*",
-            "**/*.pyc",
-        ],
-    )
-    print("uploaded →", HF)
-    xai = os.environ.get("XAI_API_KEY") or ""
-    if xai:
-        api.add_space_secret(HF, "XAI_API_KEY", xai)
-        print("secret XAI_API_KEY set")
-    else:
-        print("XAI_API_KEY UNAVAILABLE — backend stays SOFTWARE")
+        with urllib.request.urlopen(f"https://huggingface.co/api/spaces/{HF}", timeout=20) as res:
+            return json.loads(res.read())
+    except Exception:  # noqa: BLE001 — reported as UNAVAILABLE, never raised
+        return None
+
+
+def main() -> int:
+    info = space_info()
+    if info is None:
+        print("Space API UNAVAILABLE — Hub occupancy not measured. Not fabricated LIVE.")
+        return 2
+    runtime = info.get("runtime") or {}
+    print(f"REPORTED space id={info.get('id')} sha={info.get('sha')} "
+          f"stage={runtime.get('stage')} runtime_sha={runtime.get('sha')}")
     print("page", PAGE)
     print("runtime", HOST)
     deadline = time.time() + 600
