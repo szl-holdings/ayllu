@@ -1,7 +1,12 @@
 """Fail-closed morphisms (Tinku).
 
 Objects are honesty-typed remits. Morphisms cannot upgrade honesty.
-Composition is associative. BLOCKED is absorbing.
+Composition is associative in the arrows it walks: (f∘g)∘h and f∘(g∘h)
+apply f, g, h in the same order. BLOCKED is absorbing: a composite keeps
+each operand's own gate, so composing never removes a block. (When an arrow
+re-stamps remit, the two groupings hold different inner composites whose
+remit gates see different bundles, so one grouping can block where the other
+allows. Neither grouping ever drops a gate.)
 State-changing arrows require Human Lock.
 
 This is Ayllu's composition law — typed, fail-closed, receipted.
@@ -63,6 +68,14 @@ class Arrow:
 
 @dataclass
 class Morphism:
+    """A typed arrow. Either a leaf (`fn`) or a composite (`parts`), never both.
+
+    A composite first runs its own gate on its input, then walks its parts
+    exactly as `run_pipeline` does, so a block anywhere inside it is the
+    composite's decision. `then()` keeps both operands whole, so every
+    operand's own gate runs on the same bundle it would see alone.
+    """
+
     name: str
     domain: str
     codomain: str
@@ -71,6 +84,11 @@ class Morphism:
     lock_required: bool = False
     remit: str = "any"
     fn: ApplyFn | None = None
+    parts: tuple["Morphism", ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.parts and self.fn is not None:
+            raise TypeError(f"morphism {self.name} takes fn or parts, not both")
 
     def apply(self, bundle: Bundle, ctx: ArrowContext) -> Arrow:
         reasons: list[str] = []
@@ -90,6 +108,13 @@ class Morphism:
         if reasons:
             blocked = blocked_bundle("; ".join(reasons), remit=self.codomain)
             return Arrow(self.name, Decision.BLOCKED, blocked, self.domain, self.codomain, tuple(reasons))
+        if self.parts:
+            last = _walk(self.parts, bundle, ctx)[-1]
+            if last.decision is not Decision.ALLOW:
+                # BLOCKED is absorbing: the blocking arrow's reasons and bundle are the composite's.
+                why = last.reasons or (f"{last.name} did not allow",)
+                return Arrow(self.name, Decision.BLOCKED, last.bundle, self.domain, self.codomain, why)
+            return Arrow(self.name, Decision.ALLOW, last.bundle.degrade(bundle.honesty), self.domain, self.codomain)
         payload = bundle
         if self.fn is not None:
             payload = self.fn(bundle, ctx)
@@ -99,14 +124,6 @@ class Morphism:
     def then(self, other: "Morphism") -> "Morphism":
         if self.codomain != other.domain and other.domain != "any" and self.codomain != "any":
             raise TypeError(f"cannot compose {self.name}:{self.codomain} then {other.name}:{other.domain}")
-
-        def composed(bundle: Bundle, ctx: ArrowContext) -> Bundle:
-            a = self.apply(bundle, ctx)
-            if a.decision is Decision.BLOCKED:
-                return a.bundle
-            b = other.apply(a.bundle, ctx)
-            return b.bundle
-
         return Morphism(
             name=f"{self.name}∘{other.name}",
             domain=self.domain,
@@ -115,8 +132,24 @@ class Morphism:
             state_changing=self.state_changing or other.state_changing,
             lock_required=self.lock_required or other.lock_required,
             remit=other.remit if other.remit != "any" else self.remit,
-            fn=composed,
+            # Each operand stays whole, never flattened: a composite's own gate can be
+            # stricter than its parts (built by hand, or a remit an inner arrow
+            # re-stamps), and flattening would drop it.
+            parts=(self, other),
         )
+
+
+def _walk(morphisms: Sequence[Morphism], bundle: Bundle, ctx: ArrowContext) -> list[Arrow]:
+    """Apply left-to-right and stop at the first arrow that does not ALLOW."""
+    arrows: list[Arrow] = []
+    current = bundle
+    for m in morphisms:
+        arrow = m.apply(current, ctx)
+        arrows.append(arrow)
+        if arrow.decision is not Decision.ALLOW:
+            break
+        current = arrow.bundle
+    return arrows
 
 
 def identity(object_name: str = "any") -> Morphism:
@@ -140,21 +173,14 @@ def compose(*morphisms: Morphism) -> Morphism:
 
 def run_pipeline(morphisms: Sequence[Morphism], bundle: Bundle, ctx: ArrowContext) -> dict[str, Any]:
     """Evaluate left-to-right. Stop on first BLOCKED. Honesty never upgrades."""
-    steps: list[dict[str, Any]] = []
-    current = bundle
-    decision = Decision.ALLOW
-    for m in morphisms:
-        arrow = m.apply(current, ctx)
-        steps.append(arrow.as_dict())
-        if arrow.decision is Decision.BLOCKED:
-            decision = Decision.BLOCKED
-            current = arrow.bundle
-            break
-        current = arrow.bundle
+    arrows = _walk(morphisms, bundle, ctx)
+    blocked = bool(arrows) and arrows[-1].decision is not Decision.ALLOW
+    decision = Decision.BLOCKED if blocked else Decision.ALLOW
+    current = arrows[-1].bundle if arrows else bundle
     return {
         "schema": SCHEMA,
         "decision": decision.value,
-        "steps": steps,
+        "steps": [arrow.as_dict() for arrow in arrows],
         "out": current.as_dict(),
         "kind": Kind.SOFTWARE.value,
         "joules": ENERGY,
