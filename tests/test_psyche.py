@@ -2,11 +2,17 @@
 from __future__ import annotations
 
 import os
+from types import SimpleNamespace
+
+import pytest
 
 os.environ["AYLLU_FORCE_SOFTWARE"] = "1"
 
 from fastapi.testclient import TestClient
 
+import app as app_module
+import ayllu.psyche.engine as engine_module
+import ayllu.psyche.kawsay as kawsay_module
 from app import app
 from ayllu.psyche.engine import Psyche
 from ayllu.psyche.lock import HumanLock
@@ -25,6 +31,22 @@ from ayllu.psyche.neural import (
 )
 from ayllu.psyche.seats import roster_typed, seat_morphism
 from ayllu.psyche.types import ENERGY, LAMBDA, Bundle, Honesty, Kind, meet, parse_honesty
+
+
+@pytest.fixture(autouse=True)
+def isolated_local_psyche(monkeypatch):
+    def empty_sense(*_args, **_kwargs):
+        return {"handles": [], "ready": False, "kind": "SOFTWARE", "content_access": "HANDLES_ONLY", "honesty": "UNAVAILABLE"}
+
+    monkeypatch.setattr(app_module, "PSYCHE", Psyche())
+    monkeypatch.setattr(app_module, "_PSYCHE_BUCKET", SimpleNamespace(check=lambda: (True, 0)))
+    monkeypatch.setattr(engine_module, "kawsay_sense", empty_sense)
+    monkeypatch.setattr(kawsay_module, "sense", empty_sense)
+
+
+def simulate_library_admission(monkeypatch, psyche):
+    """Simulate admission only on this fresh instance for algorithm coverage."""
+    monkeypatch.setattr(psyche.lock, "admit", lambda *_args, **_kwargs: {"decision": "ALLOW", "reasons": [], "approval_status": "TEST_ONLY_MOCK"})
 
 
 def test_honesty_lattice_never_upgrades() -> None:
@@ -140,7 +162,8 @@ def test_write_morphism_blocks_without_lock() -> None:
     lock.engage()
     ctx2 = ArrowContext(lock=lock, seat="Willakuq", action="imprint")
     arrow2 = write.apply(Bundle(payload={"text": "x"}, honesty=Honesty.MEASURED), ctx2)
-    assert arrow2.decision.value == "ALLOW"
+    assert arrow2.decision.value == "BLOCKED"
+    assert lock.snapshot()["two_person_attested"] is False
 
 
 def test_honesty_floor_blocks_upgrade_path() -> None:
@@ -163,11 +186,21 @@ def test_hypergraph_has_eleven_seats_and_five_organs() -> None:
     assert seat_morphism("Maskaq") is not None
 
 
-def test_engine_imprint_fail_closed_then_allow() -> None:
+def test_engine_demo_engagement_keeps_memory_writes_blocked() -> None:
     p = Psyche()
     blocked = p.imprint("doctrine lock 749/14/163")
     assert blocked["blocked"] is True
     p.set_lock(True)
+    blocked = p.imprint("synthetic fixture", honesty="MEASURED")
+    assert blocked["blocked"] is True
+    assert blocked["gate"]["autonomy"]["two_person_attested"] is False
+    assert p.replay(8)["blocked"] is True
+    assert p.yuyay.patterns == []
+
+
+def test_engine_library_memory_with_simulated_admission(monkeypatch) -> None:
+    p = Psyche()
+    simulate_library_admission(monkeypatch, p)
     missing = p.imprint("doctrine lock 749/14/163")
     assert missing["ok"] is False
     assert missing.get("honesty") == "UNAVAILABLE" or missing.get("blocked") is True
@@ -195,7 +228,7 @@ def test_pipeline_absorbs_blocked() -> None:
     assert ran["joules"] is None
 
 
-def test_psyche_api_operational() -> None:
+def test_psyche_api_read_only_and_blocked_demo_writes() -> None:
     c = TestClient(app)
     h = c.get("/api/v1/psyche/health")
     assert h.status_code == 200
@@ -216,6 +249,8 @@ def test_psyche_api_operational() -> None:
     locked = c.post("/api/v1/psyche/lock", json={"engaged": True})
     assert locked.status_code == 200
     assert locked.json()["engaged"] is True
+    assert locked.json()["approval_status"] == "UNVERIFIED_DEMO"
+    assert locked.json()["two_person_attested"] is False
     missing = c.post("/api/v1/psyche/imprint", json={"text": "khipu knot sealed", "human_lock": True})
     assert missing.status_code == 200
     assert missing.json()["ok"] is False
@@ -230,13 +265,14 @@ def test_psyche_api_operational() -> None:
         json={"text": "khipu knot sealed", "human_lock": True, "honesty": "MEASURED"},
     )
     assert ok.status_code == 200
-    assert ok.json()["ok"] is True
+    assert ok.json()["ok"] is False
+    assert ok.json()["blocked"] is True
     rec = c.post("/api/v1/psyche/recall", json={"cue": "khipu knot"})
     assert rec.status_code == 200
-    assert rec.json()["recall"]["ok"] is True
+    assert rec.json()["recall"]["ok"] is False
     graph = c.get("/api/v1/psyche/graph")
     assert graph.status_code == 200
-    assert graph.json()["counts"]["engrams"] >= 1
+    assert graph.json()["counts"]["engrams"] == 0
 
 
 def test_kawsay_beat_presence_stays_conjecture() -> None:
@@ -268,8 +304,18 @@ def test_kawsay_graft_fail_closed() -> None:
     assert blocked["blocked"] is True
     p.set_lock(True)
     ok = p.graft("Lambda uniqueness conjecture")
-    assert ok["blocked"] is False
+    assert ok["blocked"] is True
+    assert ok["ok"] is False
+    assert p.yuyay.patterns == []
+
+
+def test_library_graft_with_simulated_admission(monkeypatch) -> None:
+    p = Psyche()
+    simulate_library_admission(monkeypatch, p)
+    monkeypatch.setattr(engine_module, "kawsay_sense", lambda *_args, **_kwargs: {"handles": [{"nodeId": "fixture-node", "label": "synthetic library fixture"}], "ready": True, "honesty": "SOFTWARE"})
+    ok = p.graft("synthetic fixture")
     assert ok["ok"] is True
+    assert len(ok["sealed"]) == 1
     assert isinstance(ok["sealed"], list)
 
 

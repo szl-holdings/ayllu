@@ -49,6 +49,8 @@ class Psyche:
         self.last_winay: dict[str, Any] | None = None
 
     def set_lock(self, engaged: bool) -> dict[str, Any]:
+        if type(engaged) is not bool:
+            raise ValueError("engaged must be a boolean")
         if engaged:
             self.lock.engage()
         else:
@@ -169,6 +171,8 @@ class Psyche:
 
     def compose_turn(self, cue: str, seat: str = "Amaru", imprint: bool = False) -> dict[str, Any]:
         """Full Tinku pulse: encode → recall → seat → (optional imprint)."""
+        if type(imprint) is not bool:
+            raise ValueError("imprint must be a boolean")
         self.pulses += 1
         rec = self.yuyay.recall(cue)
 
@@ -204,7 +208,7 @@ class Psyche:
             "compose",
             ran["decision"],
             ran["honesty"],
-            {"cue": cue, "seat": seat, "imprint": bool(imprint)},
+            {"cue": cue, "seat": seat, "imprint": imprint},
             "Tinku pulse.",
         )
         return {

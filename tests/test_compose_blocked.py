@@ -156,7 +156,8 @@ def test_lock_block_still_blocks_through_composition() -> None:
     assert blocked.reasons
     lock = HumanLock()
     lock.engage()
-    assert f.then(write).apply(bundle, _ctx(lock)).decision is Decision.ALLOW
+    assert f.then(write).apply(bundle, _ctx(lock)).decision is Decision.BLOCKED
+    assert lock.admit("imprint", state_changing=True)["two_person_attested"] is False
 
 
 def test_honesty_never_upgrades_through_composition() -> None:
