@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 
 from app import app
 from ayllu.production import contract
@@ -214,17 +214,24 @@ def _annotate_manifest() -> None:
     _rebind("manifest", manifest)
 
 
-def _readyz_body() -> dict[str, Any]:
+def _readyz_body() -> dict[str, Any] | Response:
+    """Forward readiness evidence, including failure status and response headers."""
     for route in app.routes:
         endpoint = getattr(route, "endpoint", None)
         if getattr(endpoint, "__name__", "") == "readyz":
             body = endpoint()
-            return body if isinstance(body, dict) else {"ready": True}
-    return {"ready": True, "lambda": "CONJECTURE_1", "agi": "CONJECTURE"}
+            if isinstance(body, (dict, Response)):
+                return body
+            break
+    return JSONResponse(
+        {"ready": False, "state": "READINESS_EVIDENCE_UNAVAILABLE",
+         "lambda": "CONJECTURE_1", "agi": "CONJECTURE"},
+        status_code=503,
+    )
 
 
-@app.get("/healthz")
-def healthz() -> dict[str, Any]:
+@app.get("/healthz", response_model=None)
+def healthz() -> dict[str, Any] | Response:
     """Same organ as /readyz. Monitors that hit /healthz must not 404."""
     return _readyz_body()
 
