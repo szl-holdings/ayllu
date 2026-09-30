@@ -383,6 +383,20 @@ def psyche_graph() -> dict[str, Any]:
     return PSYCHE.graph.snapshot()
 
 
+def _psyche_boolean(body: dict[str, Any], *names: str) -> bool | None:
+    """Absent is None; supplied aliases must be matching JSON booleans."""
+    supplied = [(name, body[name]) for name in names if name in body]
+    if not supplied:
+        return None
+    for name, value in supplied:
+        if type(value) is not bool:
+            raise ValueError(f"{name} must be a JSON boolean")
+    value = supplied[0][1]
+    if any(other is not value for _, other in supplied[1:]):
+        raise ValueError("conflicting boolean aliases: " + ", ".join(names))
+    return value
+
+
 @app.post("/api/v1/psyche/lock")
 async def psyche_lock(request: Request) -> JSONResponse:
     ok, retry = _PSYCHE_BUCKET.check()
@@ -390,11 +404,12 @@ async def psyche_lock(request: Request) -> JSONResponse:
         return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
     try:
         body = await _bounded_json_body(request)
+        requested = _psyche_boolean(body, "engaged", "human_lock", "humanLock", "lock")
+        engaged = False if requested is None else requested
     except _BodyTooLarge as exc:
         return JSONResponse({"error": str(exc)}, status_code=413)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
-    engaged = bool(body.get("engaged") or body.get("human_lock") or body.get("humanLock") or body.get("lock"))
     return JSONResponse(PSYCHE.set_lock(engaged))
 
 
@@ -408,15 +423,13 @@ async def psyche_imprint(request: Request) -> JSONResponse:
         text = _clip_prompt(body.get("text") or body.get("prompt") or body.get("q") or "")
         source = str(body.get("source") or "pulse")[:80]
         honesty = parse_honesty(body.get("honesty")).value
-        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
-            PSYCHE.set_lock(True)
-        if body.get("human_lock") is False or body.get("humanLock") is False:
-            # explicit false leaves lock as-is unless they also sent engaged
-            pass
+        requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
         return JSONResponse({"error": str(exc)}, status_code=413)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    if requested is not None:
+        PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.imprint(text, source=source, honesty=honesty))
 
 
@@ -444,12 +457,13 @@ async def psyche_replay(request: Request) -> JSONResponse:
     try:
         body = await _bounded_json_body(request)
         rounds = int(body.get("rounds") or 24)
-        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
-            PSYCHE.set_lock(True)
+        requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
         return JSONResponse({"error": str(exc)}, status_code=413)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    if requested is not None:
+        PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.replay(rounds))
 
 
@@ -462,13 +476,15 @@ async def psyche_compose(request: Request) -> JSONResponse:
         body = await _bounded_json_body(request)
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
         seat = str(body.get("seat") or body.get("persona") or "Amaru")
-        imprint = bool(body.get("imprint"))
-        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
-            PSYCHE.set_lock(True)
+        requested_imprint = _psyche_boolean(body, "imprint")
+        imprint = False if requested_imprint is None else requested_imprint
+        requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as ext:
         return JSONResponse({"error": str(ext)}, status_code=413)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    if requested is not None:
+        PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.compose_turn(cue, seat=seat, imprint=imprint))
 
 
@@ -497,12 +513,13 @@ async def psyche_graft(request: Request) -> JSONResponse:
         body = await _bounded_json_body(request)
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
         k = int(body.get("k") or 6)
-        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
-            PSYCHE.set_lock(True)
+        requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
         return JSONResponse({"error": str(exc)}, status_code=413)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    if requested is not None:
+        PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.graft(cue, k=k))
 
 
@@ -515,12 +532,13 @@ async def psyche_beat(request: Request) -> JSONResponse:
         body = await _bounded_json_body(request)
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
         seat = str(body.get("seat") or body.get("persona") or "Maskaq")
-        if body.get("human_lock") or body.get("humanLock") or body.get("lock"):
-            PSYCHE.set_lock(True)
+        requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
         return JSONResponse({"error": str(exc)}, status_code=413)
     except ValueError as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
+    if requested is not None:
+        PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.beat(cue, seat=seat))
 
 

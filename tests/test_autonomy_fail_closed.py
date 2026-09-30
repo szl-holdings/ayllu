@@ -195,12 +195,13 @@ def test_absent_lambda_on_read_allows_without_advisory() -> None:
     assert g["advisories"] == []
 
 
-def test_human_lock_writes_are_not_blocked_by_this_change() -> None:
-    # HumanLock.admit has no Λ source; an absent Λ must not block psyche writes.
+def test_demo_human_lock_does_not_attest_two_person_approval() -> None:
     lock = HumanLock()
     assert lock.admit("imprint")["decision"] == Decision.BLOCKED.value
     lock.engage()
     adm = lock.admit("imprint")
-    assert adm["decision"] == Decision.ALLOW.value
+    assert adm["decision"] == Decision.BLOCKED.value
+    assert adm["autonomy"]["two_person_attested"] is False
+    assert adm["approval_status"] == "UNVERIFIED_DEMO"
     assert adm["autonomy"]["lambda_error"] is None
 

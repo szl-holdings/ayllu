@@ -1,6 +1,7 @@
 """Human Lock, restraint ladder, doctrine lock.
 
 State-changing morphisms fail closed without the lock.
+Engagement is demo intent, never verified two-person approval.
 Restraint rungs demand evidence. Joules stay None.
 Λ floor is advisory; attestation is binding.
 """
@@ -29,6 +30,10 @@ class HumanLock:
     doctrine: str = DOCTRINE
     lock: str = LOCK_ID
 
+    def __post_init__(self) -> None:
+        if type(self.engaged) is not bool:
+            raise ValueError("engaged must be a boolean")
+
     def engage(self) -> None:
         self.engaged = True
 
@@ -36,7 +41,7 @@ class HumanLock:
         self.engaged = False
 
     def evidence(self) -> float:
-        return 0.8 if self.engaged else 0.2
+        return 0.8 if self.engaged is True else 0.2
 
     def ladder(self) -> dict[str, Any]:
         ev = self.evidence()
@@ -48,12 +53,19 @@ class HumanLock:
             "blocked": blocked,
             "honesty": Honesty.MODELED.value,
             "lock": self.engaged,
+            "approval_status": "UNVERIFIED_DEMO",
+            "write_authorized": False,
         }
 
     def admit(self, action: str, *, state_changing: bool | None = None) -> dict[str, Any]:
-        changing = bool(state_changing) if state_changing is not None else action in WRITE_ACTIONS
         reasons: list[str] = []
-        if changing and not self.engaged:
+        invalid_changing = state_changing is not None and type(state_changing) is not bool
+        changing = action in WRITE_ACTIONS or state_changing is True or invalid_changing
+        if invalid_changing:
+            reasons.append("state_changing must be a boolean (fail-closed).")
+        if type(self.engaged) is not bool:
+            reasons.append("Demo engagement must be a boolean (fail-closed).")
+        if changing and self.engaged is not True:
             reasons.append("Human Lock is required for this action (fail-closed).")
         ladder = self.ladder()
         if changing and "commit" not in ladder["allowed"]:
@@ -61,7 +73,9 @@ class HumanLock:
         auto = autonomy_gate(
             action,
             state_changing=changing,
-            two_person_attested=self.engaged,
+            # No trusted verifier is configured. Caller intent cannot satisfy
+            # the binding requirement for verified two-person approval.
+            two_person_attested=False,
         )
         if not auto["allow"]:
             reasons.append(auto["reason"])
@@ -74,6 +88,8 @@ class HumanLock:
             "lock": self.engaged,
             "ladder": ladder,
             "autonomy": auto,
+            "approval_status": "UNVERIFIED_DEMO",
+            "two_person_attested": False,
             "doctrine": self.doctrine,
             "lockId": self.lock,
             "honesty": Honesty.MEASURED.value,
@@ -87,7 +103,10 @@ class HumanLock:
             "doctrine": self.doctrine,
             "lock": self.lock,
             "ladder": self.ladder(),
-            "honesty": Honesty.MEASURED.value if self.engaged else Honesty.UNAVAILABLE.value,
+            "honesty": Honesty.MODELED.value if self.engaged is True else Honesty.UNAVAILABLE.value,
+            "approval_status": "UNVERIFIED_DEMO",
+            "two_person_attested": False,
+            "write_authorized": False,
             "joules": ENERGY,
             "lambda": LAMBDA,
         }

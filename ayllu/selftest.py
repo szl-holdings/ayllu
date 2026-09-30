@@ -87,7 +87,12 @@ def main() -> None:
     mind.set_lock(True)
     missing = mind.imprint("selftest engram")
     assert missing.get("ok") is False
-    ok = mind.imprint("selftest engram", honesty=Honesty.MEASURED)
+    engaged = mind.imprint("selftest engram", honesty=Honesty.MEASURED)
+    assert engaged.get("blocked") is True
+    assert engaged["gate"]["two_person_attested"] is False
+    assert mind.yuyay.patterns == []
+    # Isolated synthetic algorithm data grants no route or gate authority.
+    ok = mind.yuyay.imprint("selftest engram", honesty=Honesty.SOFTWARE)
     assert ok.get("ok") is True
     x = encode("selftest engram")
     rec = hopfield_classic(mind.yuyay.W, x)
@@ -97,7 +102,7 @@ def main() -> None:
 
     print(f"AYLLU SELFTEST OK - {len(ROSTER)} personas; tier router + bounded loop "
           f"honest fallbacks; Lambda-gate fail-closed; lounge honest; backend mode="
-          f"{st['mode']}; psyche neural OPERATIONAL.")
+          f"{st['mode']}; synthetic neural check PASS; demo protected writes BLOCKED.")
 
 
 if __name__ == "__main__":
