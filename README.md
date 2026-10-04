@@ -18,6 +18,29 @@ tags:
   - neural-symbolic
 ---
 
+<p><a href="https://huggingface.co/spaces/SZLHOLDINGS/szl-command-lab"><img src="https://raw.githubusercontent.com/szl-holdings/.github/main/profile/assets/szl/logos/szl_mark_holographic.svg" alt="SZL Holdings" width="112" /></a></p>
+
+# Ayllu · Agent Council
+
+Explore an eleven-seat software council, a legal-matter workspace and memory experiments with explicit evidence and action boundaries.
+
+**Artifact:** Agent council and legal-matter application · **Stage:** Software · backend and action admission remain separate
+
+[Explore in Command Lab](https://huggingface.co/spaces/SZLHOLDINGS/szl-command-lab) · [Build](https://github.com/szl-holdings/ayllu) · [Evidence](https://github.com/szl-holdings/ayllu/blob/55178e2edc6dc11edfe40065f88d4c9cda33b004/README.md)
+
+## Before you use it
+
+- The eleven seats are roles on one routed backend, not eleven separately trained models.
+- Live output requires a reachable configured backend. Missing dependencies remain SOFTWARE or UNAVAILABLE; model output remains unverified.
+- Protected state changes retain two-person attestation and Human Lock. Receipts remain UNSIGNED, and Λ remains Conjecture 1.
+
+<details>
+<summary>Technical details and original evidence</summary>
+
+The retained source below is exact and may contain historical observations. Its dates, use restrictions, licenses and evidence boundaries continue to apply.
+
+<!-- SZL-PRESERVED-TECHNICAL-BODY:START -->
+
 # Ayllu Counsel
 
 **Ayllu** (Quechua): a self-governing kinship community. This is SZL Holdings'
@@ -124,3 +147,7 @@ See [docs/LEADERS.md](docs/LEADERS.md) and [HONEST_DISCLOSURE.md](HONEST_DISCLOS
 ## License
 
 Apache-2.0. Doctrine v11. Λ = Conjecture 1.
+
+<!-- SZL-PRESERVED-TECHNICAL-BODY:END -->
+
+</details>

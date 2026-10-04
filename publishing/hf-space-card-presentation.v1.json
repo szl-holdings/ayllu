@@ -1,0 +1,58 @@
+{
+  "_notice": "SPDX-License-Identifier: Apache-2.0; (c) 2026 SZL Holdings",
+  "schema": "szl.hf.space-card-presentation.v1",
+  "source_repository": "szl-holdings/ayllu",
+  "cards": [
+    {
+      "kind": "spaces",
+      "repo_id": "SZLHOLDINGS/ayllu",
+      "source_repository": "szl-holdings/ayllu",
+      "source_revision_before_presentation": "55178e2edc6dc11edfe40065f88d4c9cda33b004",
+      "source_path": "README.md",
+      "source_url": "https://github.com/szl-holdings/ayllu/blob/55178e2edc6dc11edfe40065f88d4c9cda33b004/README.md",
+      "presentation": {
+        "title": "Ayllu \u00b7 Agent Council",
+        "summary": "Explore an eleven-seat software council, a legal-matter workspace and memory experiments with explicit evidence and action boundaries.",
+        "artifact_type": "Agent council and legal-matter application",
+        "stage": "Software \u00b7 backend and action admission remain separate",
+        "visible_limits": [
+          "The eleven seats are roles on one routed backend, not eleven separately trained models.",
+          "Live output requires a reachable configured backend. Missing dependencies remain SOFTWARE or UNAVAILABLE; model output remains unverified.",
+          "Protected state changes retain two-person attestation and Human Lock. Receipts remain UNSIGNED, and \u039b remains Conjecture 1."
+        ],
+        "kind": "spaces",
+        "repo_id": "SZLHOLDINGS/ayllu",
+        "build_url": "https://github.com/szl-holdings/ayllu",
+        "evidence_url": "https://github.com/szl-holdings/ayllu/blob/55178e2edc6dc11edfe40065f88d4c9cda33b004/README.md"
+      },
+      "before_sha256": "6482a23538910e5f680d7cac3033cbc8e54ac4ed11b3df21b7ece0119791d428",
+      "after_sha256": "2ed1fb002cd29c040f87b2160f14cdcd45c8c16c38f489377878ca47d2f01885",
+      "front_matter_sha256": "44ba07f16fc4797468ea90bd608a072fb86e6bcb5fa36fd1861435af61219b24",
+      "preserved_body_sha256": "5cf4d85817ad90d8678312b374e034d2270660d97af17304bdf244eb0070d41f",
+      "bytes_before": 5806,
+      "bytes_after": 7285,
+      "front_matter_preserved": true,
+      "original_body_preserved": true,
+      "hub_observation": {
+        "hub_revision": "0d5869374bb82d19eaf57d954a7baf32ba69932a",
+        "source_url": "https://huggingface.co/spaces/SZLHOLDINGS/ayllu/resolve/0d5869374bb82d19eaf57d954a7baf32ba69932a/README.md",
+        "observed_at": "2026-10-04T16:10:37.508146+00:00",
+        "sha256": "6482a23538910e5f680d7cac3033cbc8e54ac4ed11b3df21b7ece0119791d428",
+        "bytes": 5806,
+        "state": "EXACT_PUBLIC_CARD"
+      },
+      "source_body_equals_dated_hub_body": true,
+      "publisher_repository": "szl-holdings/ayllu",
+      "publisher_workflow": ".github/workflows/hf-space.yml",
+      "publisher_workflow_source_url": "https://github.com/szl-holdings/ayllu/blob/55178e2edc6dc11edfe40065f88d4c9cda33b004/.github/workflows/hf-space.yml",
+      "publisher_reusable": "szl-holdings/.github/.github/workflows/reusable-hf-deploy.yml@1b3255219cd1d5fa7ac850195b18fc907cac2cbf",
+      "publisher_readme_mapping": "Root README.md included by include-readme:true in the existing Dockerfile-derived target payload",
+      "publication_trigger": "MAIN_PUSH_OR_EXISTING_WORKFLOW_DISPATCH",
+      "publication_state_at_preparation": "SOURCE_CANDIDATE_ONLY_NO_HUB_EVENT_BY_THIS_LANE",
+      "publication_boundary": "The existing writer binds current main, publishes its complete Dockerfile-derived payload, verifies immutable bytes and runtime smoke checks. This card change does not add a writer, alter its authentication, restore a missing Hub-parent CAS guard, or claim runtime/model qualification.",
+      "writer_or_workflow_changed": false,
+      "runtime_or_artifact_code_changed": false,
+      "central_apply_allowed": false
+    }
+  ]
+}
