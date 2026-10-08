@@ -26,6 +26,7 @@ def test_chamber_html() -> None:
     assert page.status_code == 200
     text = page.text
     assert "Ayllu" in text
+    assert 'data-szl-public-experience-v3="true"' in text
     assert "holographic" in text.lower()
     for eid in ("organs", "sb", "hatun", "ouroboros", "invariants", "convene", "askone"):
         assert f'id="{eid}"' in text, eid
