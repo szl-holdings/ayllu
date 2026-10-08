@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-szl-public-experience-v3="true">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -14,29 +14,30 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--void);color:var(--cream);
   font:13.5px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
-body{overflow:hidden}
+body{overflow:auto;container-type:inline-size}
 canvas#holo{position:fixed;inset:0;width:100%;height:100%;display:block}
 .hud{position:relative;z-index:2;display:grid;grid-template-columns:280px 1fr 340px;
   grid-template-rows:auto 1fr auto;height:100vh;gap:0;pointer-events:none}
 .hud > *{pointer-events:auto}
 .top{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:12px 18px;background:linear-gradient(180deg,rgba(3,6,12,.9),transparent);flex-wrap:wrap}
-.brand{display:flex;align-items:baseline;gap:10px}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
 .brand h1{margin:0;font-size:20px;letter-spacing:.4px;color:var(--teal)}
 .brand .sub{color:var(--gold);font:11px ui-monospace,monospace;letter-spacing:1.1px;text-transform:uppercase}
 .links{display:flex;gap:8px;flex-wrap:wrap}
-.links a{color:var(--teal);text-decoration:none;border:1px solid var(--line);border-radius:999px;
-  padding:4px 10px;font:11px ui-monospace,monospace}
+.links a{display:inline-flex;align-items:center;min-height:44px;color:var(--teal);text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:8px 10px;font:11px ui-monospace,monospace}
 .links a:hover{border-color:var(--teal)}
 .badge{font:10.5px ui-monospace,monospace;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
 .badge.live{color:#7dffb0;border-color:#1c5;background:#0a2a17}
 .badge.software{color:var(--warn);border-color:#a83;background:#2a2109}
-.left,.right{margin:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+.left,.right{margin:8px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;
   padding:12px;overflow:auto;backdrop-filter:blur(8px)}
 .center{display:flex;flex-direction:column;justify-content:flex-end;padding:0 12px 12px;min-width:0}
 h2{margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
-.seat{display:flex;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid #13202c;cursor:pointer}
-.seat:hover{background:rgba(58,244,200,.05)}
+.seat{display:flex;gap:8px;align-items:center;min-height:44px;padding:6px 4px;
+  border-bottom:1px solid #13202c;cursor:pointer}
+.seat:hover,.seat:focus-visible{background:rgba(58,244,200,.05)}
 .dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 8px currentColor;flex:none}
 .seat b{font-size:12px}
 .seat span{color:var(--dim);font-size:11px;margin-left:auto}
@@ -49,6 +50,10 @@ textarea{width:100%;min-height:64px;resize:vertical;background:#070e16;color:var
 button{background:var(--teal);color:#04140f;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
 button.ghost{background:transparent;color:var(--teal);border:1px solid var(--line)}
 button:disabled{opacity:.5;cursor:wait}
+.row button,.row select{min-height:44px}
+.row select{min-width:44px}
+.row label.law{display:inline-flex;align-items:center;gap:8px;margin-top:0}
+.row input[type="checkbox"]{width:44px;height:44px;flex:none;margin:0;accent-color:var(--teal)}
 .turn{border:1px solid var(--line);border-radius:8px;padding:8px;margin:0 0 8px;background:#071018}
 .turn .meta{color:var(--dim);font:11px ui-monospace,monospace}
 .ans{white-space:pre-wrap;margin-top:6px;font-size:12.5px}
@@ -56,10 +61,18 @@ button:disabled{opacity:.5;cursor:wait}
 .kpi{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .kpi div{background:#071018;border:1px solid var(--line);border-radius:8px;padding:8px}
 .kpi b{display:block;font-size:16px;color:var(--teal)}
-.estate a{display:block;color:var(--teal);text-decoration:none;font-size:12px;padding:3px 0}
+.estate a{display:flex;align-items:center;min-height:44px;color:var(--teal);text-decoration:none;
+  font-size:12px;padding:8px 0}
+.note a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;
+  min-height:44px;color:var(--teal)}
 .noscript{position:relative;z-index:3;padding:24px;max-width:46rem;margin:40px auto;background:#071018;border:1px solid var(--line);border-radius:12px}
 @media (max-width:960px){
-  body{overflow:auto}
+  .hud{display:flex;flex-direction:column;height:auto;min-height:100vh}
+  canvas#holo{position:sticky;top:0;height:42vh}
+  .left,.right,.center{margin:8px}
+}
+/* CSS zoom on the root narrows the layout container without changing media-query width. */
+@container (max-width:960px){
   .hud{display:flex;flex-direction:column;height:auto;min-height:100vh}
   canvas#holo{position:sticky;top:0;height:42vh}
   .left,.right,.center{margin:8px}
@@ -177,8 +190,13 @@ function renderRoster(roster, status){
     seats.push({...p, color: hueColor(i), angle: (i/11)*Math.PI*2 - Math.PI/2});
     const row = document.createElement("div");
     row.className = "seat";
+    row.setAttribute("role", "button");
+    row.tabIndex = 0;
     row.innerHTML = `<span class="dot" style="color:${hueColor(i)};background:${hueColor(i)}"></span><b>${esc(p.name)}</b><span>${esc(p.quechua)}</span>`;
     row.onclick = () => { sel.value = p.name; };
+    row.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); row.click(); }
+    };
     box.appendChild(row);
     const o = document.createElement("option");
     o.value = p.name; o.textContent = p.name+" — "+p.archetype;
