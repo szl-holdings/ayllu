@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Ayllu Counsel — Legal Matter Command</title>
 <meta name="description" content="Legal Matter Command. Live Federal Register + CourtListener through a11oy. Grok inferences. SHA3-256 UNSIGNED-honest receipts. Continuance of retired Counsel. Λ = Conjecture 1."/>
+<!-- Scoped native KANCHAY palette: szl-brand@27d12e77fc0f9f1a0e5fae8b34adf2380d51d070.
+Exact small Orbit SHA-256: 6e2b7d72a3af3d9602b79de41df0194ede6496a9661f057108ec224c0efc92e6.
+Artwork CC BY 4.0; code Apache-2.0. Existing self-contained Docker presentation; no new asset route. -->
 <style>
 :root{
   --void:#03060c;--panel:rgba(8,16,26,.86);--line:#1b2a38;
@@ -56,25 +59,51 @@ button:disabled{opacity:.5;cursor:wait}
 @media (max-width:960px){
   .kpis,.grid{grid-template-columns:1fr}
 }
+
+/* Native source projection; opaque reading surfaces with restrained silver/teal foil. */
+:root{color-scheme:dark;--void:#080b12;--panel:#111722;--line:#2b3749;--teal:#8fd9d5;--gold:#c9d3e1;--cream:#f1f4f8;--dim:#aab7c9;--edge:#71829b;--focus:#5cc4bf}
+html{scroll-padding-top:16px}body{background:radial-gradient(ellipse at 80% 0,#143638 0,transparent 52%),var(--void)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.skip-link{position:fixed;z-index:20;left:16px;top:-120px;min-height:44px;padding:12px 16px;border:1px solid var(--focus);border-radius:8px;background:var(--panel);color:var(--cream);text-decoration:underline}
+.skip-link:focus{top:16px}main:focus{outline-offset:-4px}
+.brand{align-items:center;flex-wrap:wrap;min-width:0}.brand svg{display:block;flex:none;width:40px;height:40px}.brand h1{font:500 32px/1.15 Georgia,"Times New Roman",serif;letter-spacing:-.025em;color:var(--cream)}
+.brand .sub{font-size:10px;letter-spacing:.08em}.brand .sub,.badge{overflow-wrap:anywhere;max-width:100%}
+header,.top{background:var(--panel);border-bottom:1px solid var(--line)}
+.links{min-width:0}.links a{border-color:var(--edge);text-underline-offset:4px}.links a:hover,.links a[aria-current="page"]{border-color:var(--teal);text-decoration:underline}.links a:focus-visible{outline-offset:2px}
+.card,.left,.right,.prompt,.kpis>.kpi{min-width:0;backdrop-filter:none;background:linear-gradient(var(--panel),var(--panel)) padding-box,linear-gradient(128deg,#c9d3e1,var(--line) 24%,#5cc4bf 48%,var(--line) 72%,#c9d3e1) border-box;border:1px solid transparent;border-radius:14px}
+.grid>*{min-width:0}.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kpi b{overflow-wrap:anywhere}.kpi span,.law{letter-spacing:.04em}.law,.note{font-size:12px;overflow-wrap:anywhere}.ans,.item,.meta,.hash{overflow-wrap:anywhere}
+textarea,select{min-width:0;min-height:44px;background:#080b12;border-color:var(--edge);line-height:1.6}textarea{padding:12px}select{max-width:100%;padding:8px}
+button{min-width:44px;min-height:44px;background:#8fd9d5;color:#080b12}button:hover:not(:disabled){background:#b1e6e2}button.ghost{background:#182232;border-color:var(--edge);color:var(--teal)}button.ghost:hover:not(:disabled){background:#20323f}button:disabled{opacity:1;background:#2b3749;color:var(--dim);cursor:default}
+.field-label{display:block;font-size:12px;font-weight:650;color:var(--cream);margin:12px 0 6px}.prompt .field-label{margin:0}
+input[type="checkbox"]{width:24px;height:24px;flex:none;accent-color:var(--teal)}.lock{min-height:44px}
+.item a{min-height:44px;display:flex;align-items:center;text-decoration:underline;text-underline-offset:4px}.invalid-link{display:block;padding:10px 0;color:var(--dim);overflow-wrap:anywhere}
+.source-credit{display:flex;flex-wrap:wrap;gap:4px 18px;grid-column:1/-1;padding:10px 18px;background:var(--panel);border-top:1px solid var(--line);font:11px/1.5 ui-monospace,monospace;color:var(--dim)}.source-credit a{display:inline-flex;align-items:center;min-height:44px;color:var(--teal);text-underline-offset:4px}
+.ans,.note[tabindex="0"]{max-height:34rem;overflow:auto}.seat[aria-pressed="true"]{background:#18312f;box-shadow:inset 3px 0 var(--teal)}
+@media(max-width:960px){.kpis,.grid{grid-template-columns:minmax(0,1fr)}.brand{gap:10px}.wrap{padding:18px 12px 32px}.source-credit{padding:10px 14px}}
+@media(forced-colors:active){body,header,.top,.card,.left,.right,.prompt,.kpis>.kpi,.source-credit,.chamber-intro{background:Canvas;color:CanvasText;box-shadow:none;border:1px solid CanvasText}.links a,button,button.ghost,textarea,select{background:ButtonFace;color:ButtonText;border:1px solid ButtonText}.badge,.badge.live,.badge.software{background:Canvas;color:CanvasText;border-color:CanvasText}:focus-visible{outline:3px solid Highlight}.skip-link{background:Canvas;color:LinkText}a{color:LinkText}.brand svg{forced-color-adjust:none}canvas#holo{display:none}.seat[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-2px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:960px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi span{display:block;overflow-wrap:anywhere}.kpi b{font-size:20px}}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to counsel workspace</a>
 <header>
   <div class="brand">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="szl-icon-32-title szl-icon-32-desc"><title id="szl-icon-32-title">SZL Holdings</title><desc id="szl-icon-32-desc">SZL letters, one orbit and the coral node, for placements of 24 to 48 pixels.</desc><rect width="600" height="600" rx="120" fill="#030F29"/><ellipse cx="300" cy="300" rx="262" ry="122" fill="none" stroke="#9AA7BD" stroke-width="22" transform="rotate(-22 300 300)"/><g transform="translate(300 300) scale(1.2) translate(-299.8 -299.1)"><g fill="#030F29" stroke="#030F29" stroke-width="18.33" stroke-linejoin="round"><path d="M228.256 331.049Q228.256 353.967 211.26 366.091Q194.265 378.214 161.383 378.214Q131.378 378.214 114.328 367.586Q97.278 356.957 92.406 335.367L123.96 330.163Q127.171 342.564 136.471 348.155Q145.771 353.746 162.268 353.746Q196.48 353.746 196.48 332.931Q196.48 326.288 192.549 321.97Q188.619 317.652 181.478 314.774Q174.336 311.895 154.075 307.798Q136.582 303.702 129.718 301.211Q122.853 298.72 117.317 295.343Q111.781 291.966 107.906 287.205Q104.031 282.444 101.872 276.023Q99.713 269.601 99.713 261.297Q99.713 240.15 115.601 228.913Q131.489 217.675 161.825 217.675Q190.833 217.675 205.392 226.754Q219.952 235.833 224.159 256.758L192.494 261.076Q190.058 251.001 182.585 245.908Q175.111 240.815 161.161 240.815Q131.489 240.815 131.489 259.415Q131.489 265.505 134.644 269.38Q137.8 273.255 144 275.967Q150.2 278.68 169.133 282.776Q191.608 287.537 201.296 291.578Q210.984 295.62 216.63 300.989Q222.277 306.359 225.266 313.833Q228.256 321.306 228.256 331.049Z"/><path d="M369.087 376H243.867V352.86L328.233 245.576H252.281V220H364.548V242.697L280.182 350.424H369.087Z"/><path d="M390.788 376V220H423.449V350.757H507.151V376Z"/></g><g fill="#FFFFFF"><path d="M228.256 331.049Q228.256 353.967 211.26 366.091Q194.265 378.214 161.383 378.214Q131.378 378.214 114.328 367.586Q97.278 356.957 92.406 335.367L123.96 330.163Q127.171 342.564 136.471 348.155Q145.771 353.746 162.268 353.746Q196.48 353.746 196.48 332.931Q196.48 326.288 192.549 321.97Q188.619 317.652 181.478 314.774Q174.336 311.895 154.075 307.798Q136.582 303.702 129.718 301.211Q122.853 298.72 117.317 295.343Q111.781 291.966 107.906 287.205Q104.031 282.444 101.872 276.023Q99.713 269.601 99.713 261.297Q99.713 240.15 115.601 228.913Q131.489 217.675 161.825 217.675Q190.833 217.675 205.392 226.754Q219.952 235.833 224.159 256.758L192.494 261.076Q190.058 251.001 182.585 245.908Q175.111 240.815 161.161 240.815Q131.489 240.815 131.489 259.415Q131.489 265.505 134.644 269.38Q137.8 273.255 144 275.967Q150.2 278.68 169.133 282.776Q191.608 287.537 201.296 291.578Q210.984 295.62 216.63 300.989Q222.277 306.359 225.266 313.833Q228.256 321.306 228.256 331.049Z"/><path d="M369.087 376H243.867V352.86L328.233 245.576H252.281V220H364.548V242.697L280.182 350.424H369.087Z"/><path d="M390.788 376V220H423.449V350.757H507.151V376Z"/></g></g><circle cx="373.69" cy="154.05" r="30" fill="#DF735F"/></svg>
     <h1>Ayllu Counsel</h1>
     <div class="sub">Legal Matter Command</div>
-    <span id="mode" class="badge">…</span>
+    <span id="mode" class="badge" role="status">Checking backend</span>
   </div>
-  <nav class="links">
+  <nav class="links" aria-label="AYLLU navigation">
     <a href="/">Chamber</a>
     <a href="/psyche">Psyche</a>
-    <a href="/counsel">Counsel</a>
+    <a href="/counsel" aria-current="page">Counsel</a>
     <a href="https://a-11-oy.com">a-11-oy.com</a>
     <a href="https://github.com/szl-holdings/ayllu">GitHub</a>
     <a href="/api/v1/counsel/snapshot">snapshot</a>
   </nav>
 </header>
-<main class="wrap">
+<main class="wrap" id="main-content" tabindex="-1" aria-label="Counsel workspace">
   <p class="note">Continuance of retired Counsel — not a deletion. Informational only. Not legal advice. Λ = Conjecture 1. SLSA L1. UNSIGNED-honest.</p>
   <section class="kpis">
     <div class="kpi"><span>Federal Register</span><b id="k-fr">—</b><span id="s-fr">…</span></div>
@@ -100,14 +129,15 @@ button:disabled{opacity:.5;cursor:wait}
         <option value="privacy">Privacy scan (local)</option>
         <option value="govern">Govern</option>
       </select>
-      <textarea id="q" placeholder="State the matter. Never ask this surface to act as licensed counsel. Citations stay unverified."></textarea>
+      <label class="field-label" for="q">Matter to examine</label>
+      <textarea id="q" aria-describedby="matter-help" placeholder="State the matter. Never ask this surface to act as licensed counsel. Citations stay unverified."></textarea>
       <div class="row">
         <label class="lock"><input type="checkbox" id="lock"/> Human Lock</label>
         <button type="button" id="run">Run Grok</button>
         <button type="button" class="ghost" id="refresh">Refresh docket</button>
       </div>
-      <p class="note">High-risk actions fail-closed without Human Lock. Grok is user-initiated. Empty XAI_API_KEY → honest UNAVAILABLE.</p>
-      <div id="ans" class="ans">Awaiting a matter.</div>
+      <p class="note" id="matter-help">High-risk actions fail-closed without Human Lock. Grok is user-initiated. Empty XAI_API_KEY → honest UNAVAILABLE.</p>
+      <div id="ans" class="ans" tabindex="0" role="region" aria-label="Counsel response" aria-live="polite">Awaiting a matter.</div>
       <div id="rec" class="hash"></div>
     </section>
     <aside class="card">
@@ -117,15 +147,31 @@ button:disabled{opacity:.5;cursor:wait}
     </aside>
   </section>
 </main>
+<footer class="source-credit"><a href="https://github.com/szl-holdings/ayllu">AYLLU source</a><a href="https://github.com/szl-holdings/szl-brand/tree/27d12e77fc0f9f1a0e5fae8b34adf2380d51d070/kit/logos/orbit-v2">SZL Orbit artwork · CC BY 4.0</a><a href="https://creativecommons.org/licenses/by/4.0/">Artwork license</a></footer>
 <script>
-const esc = s => String(s??"").replace(/[&<>]/g,c=>({"&":"&","<":"<",">":">"}[c]));
-async function j(url, opts){
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function publicLink(value,label,external=false){
+  let url;
   try{
-    const r = await fetch(url, opts);
+    if(!value) throw new Error("Missing URL");
+    url=new URL(String(value),location.href);
+    if(!["https:","http:"].includes(url.protocol)||url.username||url.password) throw new Error("Unsupported URL");
+  }catch(e){return `<span class="invalid-link">${esc(label)} · link unavailable</span>`}
+  return `<a href="${esc(url.href)}"${external?' target="_blank" rel="noopener noreferrer"':""}>${esc(label)}</a>`;
+}
+
+async function j(url, opts){
+  // Bounded discovery only. Effectful requests retain their server-owned contract.
+  const readOnly=!opts || !opts.method || opts.method.toUpperCase()==="GET";
+  const controller=readOnly?new AbortController():null;
+  const timer=controller?setTimeout(()=>controller.abort(),10000):null;
+  try{
+    const r = await fetch(url, controller?{...opts,signal:controller.signal}:opts);
     let d = {};
     try{ d = await r.json(); }catch(e){}
     return {ok:r.ok, status:r.status, data:d};
-  }catch(e){ return {ok:false, status:"network", data:{error:String(e)}}; }
+  }catch(e){ return {ok:false, status:e.name==="AbortError"?"timeout":"network", data:{error:String(e)}}; }
+  finally{if(timer!==null) clearTimeout(timer)}
 }
 function renderDocket(d){
   const box = document.getElementById("docket");
@@ -142,7 +188,7 @@ function renderDocket(d){
   document.getElementById("s-fr").textContent = d.live ? "REPORTED · live" : "REPORTED";
   document.getElementById("s-ct").textContent = d.live ? "REPORTED · live" : "REPORTED";
   const rows = (d.federal||[]).slice(0,6).map(x =>
-    `<div class="item"><a href="${esc(x.url||"#")}" target="_blank" rel="noopener">${esc(x.title||"(untitled)")}</a><div class="meta">${esc(x.agency||"")} · ${esc(x.date||"")}</div></div>`
+    `<div class="item">${publicLink(x.url,x.title||"(untitled)",true)}<div class="meta">${esc(x.agency||"")} · ${esc(x.date||"")}</div></div>`
   ).join("");
   box.innerHTML = rows || "<div class='note'>No filings in this scrape.</div>";
 }
@@ -166,7 +212,7 @@ async function boot(){
   document.getElementById("s-hf").textContent = est.ok ? "REPORTED" : "UNAVAILABLE";
   // Server-resolved model label (reviewed pin or allowlisted override).
   if (s.grok_model_label) document.getElementById("run").textContent = "Run " + s.grok_model_label;
-  const mode = (health.data && health.data.backend && health.data.backend.mode) || (s.xai_key_present ? "live" : "software");
+  const mode = (health.ok && health.data && health.data.backend && health.data.backend.mode) || (snap.ok ? (s.xai_key_present ? "live" : "software") : "unavailable");
   const badge = document.getElementById("mode");
   badge.textContent = String(mode).toUpperCase();
   badge.className = "badge " + (mode === "live" ? "live" : "software");

@@ -62,7 +62,18 @@ def test_council_software_and_unsigned() -> None:
     assert body["lambda"] == "CONJECTURE_1"
 
 
-def test_organism_routes() -> None:
+def test_organism_routes(monkeypatch) -> None:
+    # A route/shape unit test must not probe the retired standalone HF service.
+    # Keep the unavailable contract explicit; runtime liveness is a separate check.
+    from ayllu import hatun
+
+    probes = []
+
+    def unavailable_probe(path, timeout=6.0):
+        probes.append(path)
+        return 503, {"error": "offline route-contract fixture"}
+
+    monkeypatch.setattr(hatun, "_get", unavailable_probe)
     c = TestClient(app)
     a = c.get("/api/v1/ayllu/anatomy")
     assert a.status_code == 200
@@ -88,6 +99,10 @@ def test_organism_routes() -> None:
     hat = c.get("/api/v1/ayllu/hatun")
     assert hat.status_code == 200
     assert hat.json()["schema"] == "szl.ayllu.hatun/v1"
+    assert probes == ["/healthz", "/readyz"]
+    assert hat.json()["healthz"]["label"] == "UNAVAILABLE"
+    assert hat.json()["readyz"]["label"] == "UNAVAILABLE"
+    assert hat.json()["tools_list"].startswith("NOT_PROBED")
     ouro = c.get("/api/v1/ayllu/ouroboros")
     assert ouro.status_code == 200
     assert ouro.json()["terminating"] is True
