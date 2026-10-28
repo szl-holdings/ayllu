@@ -1,9 +1,13 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ayllu"
 version = "1.4.0"
 description = "Ayllu Counsel — evidence-bound holographic agent council + psyche"
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
 requires-python = ">=3.11"
 authors = [{ name = "SZL Holdings" }]
 dependencies = [
@@ -15,6 +19,12 @@ classifiers = ["Private :: Do Not Upload"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0", "pyyaml>=6.0"]
+
+[tool.setuptools.packages.find]
+include = ["ayllu*"]
+
+[tool.setuptools.package-data]
+ayllu = ["**/*.json", "**/*.html", "**/*.md", "**/*.pub"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
