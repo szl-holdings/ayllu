@@ -6,11 +6,6 @@ on:
         description: "Optional one-shot Cloudflare token if repo secret is empty"
         required: false
         type: string
-  push:
-    branches: [main]
-    paths:
-      - scripts/cf_www_apex.py
-      - .github/workflows/cf-www-apex.yml
 
 permissions:
   contents: read

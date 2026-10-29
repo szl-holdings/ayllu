@@ -4,7 +4,8 @@ www → apex 301 (proxied CNAME + dynamic redirect).
 killinchu → szlholdings-killinchu.hf.space CNAME DNS-only so HF TLS can issue.
 
 Token from CF_API_TOKEN env (secret or workflow_dispatch input).
-Skips cleanly when the token is absent. Never prints the token.
+Exits 2 (UNKNOWN) when the token is absent: it never reports success without
+contacting Cloudflare. Never prints the token.
 """
 from __future__ import annotations
 
@@ -158,8 +159,8 @@ def _wire_killinchu(token: str, zone_id: str) -> None:
 def main() -> int:
     token = (os.environ.get("CF_API_TOKEN") or "").strip()
     if not token:
-        print("CF_API_TOKEN UNAVAILABLE — edge skipped. Not fabricated LIVE.")
-        return 0
+        print("UNKNOWN: CF_API_TOKEN not available — no edge change made or verified. Not fabricated LIVE.")
+        return 2
     zone_id = (os.environ.get("CF_ZONE_ID") or "").strip()
     if not zone_id:
         listed = _req("GET", "/zones?" + urllib.parse.urlencode({"name": ZONE_NAME}), token)
