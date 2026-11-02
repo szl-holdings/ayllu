@@ -16,6 +16,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "hf-space.yml"
+PRESENTATION = ROOT / "publishing" / "hf-space-card-presentation.v1.json"
 SPACE = "SZLHOLDINGS/ayllu"
 LOCK = "hf-write/space/SZLHOLDINGS/ayllu"
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
@@ -46,6 +47,8 @@ def test_workflow_is_a_thin_pinned_reusable_caller(wf: dict) -> None:
     path, _, ref = uses.partition("@")
     assert path == "szl-holdings/.github/.github/workflows/reusable-hf-deploy.yml"
     assert SHA40.match(ref), f"reusable must be pinned by commit sha, got {ref!r}"
+    presentation = json.loads(PRESENTATION.read_text(encoding="utf-8"))
+    assert presentation["cards"][0]["publisher_reusable"] == uses
     w = deploy["with"]
     assert w["hf-repo"] == SPACE
     assert w["ref"] == "${{ github.sha }}"
