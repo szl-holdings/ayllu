@@ -41,6 +41,10 @@ def test_chamber_html() -> None:
     ):
         assert call in text, call
     assert "UNAVAILABLE" in text
+    from ayllu.organs import anatomy as organ_map
+
+    assert f'href="{organ_map()["yachay_space"]}"' in text
+    assert "SZLHOLDINGS/second-brain" not in text
     assert "three.js" not in text.lower()
     assert "cdn.jsdelivr" not in text.lower()
     assert "unpkg.com" not in text.lower()
@@ -80,8 +84,9 @@ def test_organism_routes(monkeypatch) -> None:
     anatomy = a.json()
     assert len(anatomy["organs"]) == 5
     yachay = next(o for o in anatomy["organs"] if o["id"] == "yachay")
-    assert "SZLHOLDINGS/second-brain" in yachay["space"]
-    assert anatomy["yachay_space"].endswith("/second-brain")
+    # SZLHOLDINGS/second-brain does not exist on the Hub; the Space is szl-second-brain.
+    assert yachay["space"] == "https://huggingface.co/spaces/SZLHOLDINGS/szl-second-brain"
+    assert anatomy["yachay_space"] == yachay["space"]
     cat = c.get("/api/v1/ayllu/estate")
     assert cat.status_code == 200
     assert "Second Brain" in [x["name"] for x in cat.json()["consolidated"]]

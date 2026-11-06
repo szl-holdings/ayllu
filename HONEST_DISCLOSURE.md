@@ -6,7 +6,8 @@
 | Fail-closed autonomy gate | MEASURED (state-change denied without attestation; a supplied Λ that is NaN, ±Inf, outside [0, 1] or not a number is denied with its szl.lambda/v1 code, `tests/test_autonomy_fail_closed.py`). An absent Λ is an annotated advisory, not a check. |
 | Debate bounded to exactly two rounds | SOFTWARE (code path after arXiv:2305.14325) |
 | Semantic consensus | NOT_MEASURED |
-| Council effectiveness | NOT_MEASURED |
+| Council effectiveness | NOT_MEASURED (the Space manifest carries it as `council_effectiveness`) |
+| Counsel policy gold eval | MEASURED per request: local ALLOW/BLOCKED recall on a 10-item toy gold set (`GET /api/v1/counsel/eval`, `tests/test_eval_gold.py`). The Space manifest's `effectiveness` is this eval's own label, UNAVAILABLE if it cannot run. Not court outcome, not licensed counsel, not council quality. |
 | Receipt signatures | UNSIGNED unless a Cosign signer is injected; never fabricated |
 | Λ uniqueness | CONJECTURE 1 — never a theorem, never green |
 | LIVE model answers | `grok-4.7` (reviewed pin; `SZL_GROK_MODEL` may select only the allowlisted rollback `grok-4.5`, any other value fails closed) when `XAI_API_KEY` is set and reachable; else CHASKI-R2 `:8098`, Ollama, or `OPENAI_BASE_URL` |

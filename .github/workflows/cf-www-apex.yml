@@ -13,16 +13,22 @@ permissions:
 jobs:
   redirect:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+      # A dispatch input is not a secret. Put it in a step `env:` and the runner prints
+      # it in that step's log header before ::add-mask:: runs; put it in this step's
+      # `if:` and a debug-logging run prints it in the condition trace ("Expanded: ...").
+      # So read it from the event file instead; from here on every later step logs it as ***.
       - name: mask dispatch token
-        if: ${{ github.event.inputs.cf_api_token != '' }}
-        env:
-          CF_API_TOKEN: ${{ github.event.inputs.cf_api_token }}
-        run: echo "::add-mask::${CF_API_TOKEN}"
+        run: |
+          token="$(jq -r '.inputs.cf_api_token // empty' "$GITHUB_EVENT_PATH")"
+          if [ -n "$token" ]; then echo "::add-mask::${token}"; fi
       - name: www 301 and killinchu CNAME
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN || github.event.inputs.cf_api_token }}

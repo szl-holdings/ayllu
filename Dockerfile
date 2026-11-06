@@ -1,8 +1,9 @@
 # Ayllu Counsel — Hugging Face Docker Space.
 # GCR pin — ECR Public is factory exit 128; Anatomy Space already runs this FROM exit 128. Explicit COPY — no pytest cache.
 # Digest-pinned: the tag names the line Dependabot tracks; the digest is the exact
-# multi-arch index (python 3.14.7-slim-trixie), resolved 2026-09-29 to the same value
-# on mirror.gcr.io and registry-1.docker.io.
+# multi-arch OCI index Dependabot last resolved for that tag. The CPython release behind
+# a digest is its org.opencontainers.image.version annotation (read the index from
+# mirror.gcr.io). CI's space-python job tests the same minor (.github/workflows/ci.yml).
 FROM mirror.gcr.io/library/python:3.15-slim@sha256:8c13a3f37a6a5b71498228e902c4b9f51c1f7900d49fabf71f9a650c6120e0d0
 
 WORKDIR /app

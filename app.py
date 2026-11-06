@@ -9,6 +9,7 @@ Honesty labels: LIVE / SOFTWARE / UNSIGNED / NOT_MEASURED / CONJECTURE_1
 from __future__ import annotations
 
 import json
+import math
 import os
 import threading
 import time
@@ -80,6 +81,8 @@ _CLIENT_ERROR_CATALOGUE: tuple[str, ...] = (
     "personas must be a list of names",
     "must be a JSON boolean",
     "conflicting boolean aliases",
+    "must be an integer",
+    "must be a finite number",
 )
 _GENERIC_CLIENT_ERROR = "invalid request body"
 
@@ -163,6 +166,40 @@ def _clip_prompt(raw: Any) -> str:
     if len(text) > MAX_PROMPT_CHARS:
         raise ValueError(f"prompt exceeds {MAX_PROMPT_CHARS} characters")
     return text
+
+
+def _int_field(body: dict[str, Any], name: str, default: int) -> int:
+    """Optional integer field; a malformed value is a 400, never a 500.
+
+    Absent, null, 0, "" and false keep ``default`` (the historic ``or`` rule).
+    Numbers and numeric strings are accepted as before. Lists, objects and
+    non-finite numbers (JSON ``Infinity``/``NaN``) raise ValueError.
+    """
+    raw = body.get(name)
+    if not raw:
+        return default
+    if not isinstance(raw, (int, float, str)):
+        raise ValueError(f"{name} must be an integer")
+    try:
+        return int(raw)
+    except (ValueError, OverflowError) as exc:
+        raise ValueError(f"{name} must be an integer") from exc
+
+
+def _float_field(body: dict[str, Any], name: str) -> float | None:
+    """Optional finite number; absent or null is None. Anything else malformed is a 400."""
+    raw = body.get(name)
+    if raw is None:
+        return None
+    if not isinstance(raw, (int, float, str)):
+        raise ValueError(f"{name} must be a finite number")
+    try:
+        value = float(raw)
+    except (ValueError, OverflowError) as exc:
+        raise ValueError(f"{name} must be a finite number") from exc
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be a finite number")
+    return value
 
 
 def _personas(names: list[str] | None) -> list:
@@ -502,7 +539,7 @@ async def psyche_replay(request: Request) -> JSONResponse:
         return JSONResponse({"error": "rate limited", "retry_after": retry}, status_code=429)
     try:
         body = await _bounded_json_body(request)
-        rounds = int(body.get("rounds") or 24)
+        rounds = _int_field(body, "rounds", 24)
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
         return _client_error(exc, 413)
@@ -542,7 +579,7 @@ async def psyche_sense(request: Request) -> JSONResponse:
     try:
         body = await _bounded_json_body(request)
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
-        k = int(body.get("k") or 6)
+        k = _int_field(body, "k", 6)
     except _BodyTooLarge as exc:
         return _client_error(exc, 413)
     except ValueError as exc:
@@ -558,7 +595,7 @@ async def psyche_graft(request: Request) -> JSONResponse:
     try:
         body = await _bounded_json_body(request)
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
-        k = int(body.get("k") or 6)
+        k = _int_field(body, "k", 6)
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
         return _client_error(exc, 413)
@@ -606,17 +643,17 @@ async def ask(request: Request) -> JSONResponse:
             raise ValueError("unknown persona")
         if not prompt:
             raise ValueError("prompt is required")
+        difficulty = _float_field(body, "difficulty")
     except _BodyTooLarge as exc:
         return _client_error(exc, 413)
     except ValueError as exc:
         return _client_error(exc, 400)
 
-    difficulty = body.get("difficulty")
     turn = await run_turn(
         persona,
         prompt,
         model_complete=_backend.model_complete,
-        difficulty=None if difficulty is None else float(difficulty),
+        difficulty=difficulty,
     )
     payload = {
         "schema": "szl.ayllu.ask-receipt/v1",
