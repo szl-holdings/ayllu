@@ -84,7 +84,7 @@ def make_receipt(
             return wrap_unsigned(
                 stamped,
                 honesty=(
-                    f"UNSIGNED — signer raised ({str(exc)[:80]}); "
+                    f"UNSIGNED — signer raised ({type(exc).__name__}); "
                     "no signature fabricated."
                 ),
             )

@@ -32,7 +32,8 @@ def _get(path: str, timeout: float = 6.0) -> tuple[int, Any]:
     except urllib.error.HTTPError as exc:
         return int(exc.code), {"error": exc.reason}
     except Exception as exc:
-        return 0, {"error": str(exc)[:160]}
+        # Only the exception class crosses the API boundary (CodeQL py/stack-trace-exposure).
+        return 0, {"error": type(exc).__name__}
 
 
 def status() -> dict[str, Any]:

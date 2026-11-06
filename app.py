@@ -65,6 +65,35 @@ class _BodyTooLarge(ValueError):
     pass
 
 
+# Exact client-error texts this module raises. The response body is always taken from
+# this catalogue (never from the exception object) so no exception text can leak
+# (CodeQL py/stack-trace-exposure). Variable tails (persona/field names) are dropped.
+_CLIENT_ERROR_CATALOGUE: tuple[str, ...] = (
+    f"request body exceeds {MAX_BODY_BYTES} bytes",
+    f"prompt exceeds {MAX_PROMPT_CHARS} characters",
+    "invalid content-length",
+    "invalid JSON body",
+    "request body must be a JSON object",
+    "no personas selected",
+    "unknown persona",
+    "must be a JSON boolean",
+    "conflicting boolean aliases",
+)
+
+
+def _client_error(exc: Exception, status: int) -> JSONResponse:
+    """Return a fixed, non-leaking error body for a 4xx caused by ``exc``."""
+    text = str(exc)
+    message = "invalid request body"
+    for known in _CLIENT_ERROR_CATALOGUE:
+        if known in text:
+            message = known
+            break
+    if status == 413:
+        message = _CLIENT_ERROR_CATALOGUE[0]
+    return JSONResponse({"error": message}, status_code=status)
+
+
 class _RateBucket:
     def __init__(self, limit: int, window_s: float) -> None:
         self.limit = int(limit)
@@ -355,9 +384,9 @@ async def counsel_infer(request: Request) -> JSONResponse:
         if context is not None:
             context = str(context)[:6000]
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     result = _counsel.infer(
         action=action,
         prompt=prompt,
@@ -407,9 +436,9 @@ async def psyche_lock(request: Request) -> JSONResponse:
         requested = _psyche_boolean(body, "engaged", "human_lock", "humanLock", "lock")
         engaged = False if requested is None else requested
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     return JSONResponse(PSYCHE.set_lock(engaged))
 
 
@@ -425,9 +454,9 @@ async def psyche_imprint(request: Request) -> JSONResponse:
         honesty = parse_honesty(body.get("honesty")).value
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     if requested is not None:
         PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.imprint(text, source=source, honesty=honesty))
@@ -443,9 +472,9 @@ async def psyche_recall(request: Request) -> JSONResponse:
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
         seat = str(body.get("seat") or body.get("persona") or "Maskaq")
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     return JSONResponse(PSYCHE.recall(cue, seat=seat))
 
 
@@ -459,9 +488,9 @@ async def psyche_replay(request: Request) -> JSONResponse:
         rounds = int(body.get("rounds") or 24)
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     if requested is not None:
         PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.replay(rounds))
@@ -482,7 +511,7 @@ async def psyche_compose(request: Request) -> JSONResponse:
     except _BodyTooLarge as ext:
         return JSONResponse({"error": str(ext)}, status_code=413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     if requested is not None:
         PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.compose_turn(cue, seat=seat, imprint=imprint))
@@ -498,9 +527,9 @@ async def psyche_sense(request: Request) -> JSONResponse:
         cue = _clip_prompt(body.get("cue") or body.get("prompt") or body.get("q") or "")
         k = int(body.get("k") or 6)
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     return JSONResponse(PSYCHE.sense(cue, k=k))
 
 
@@ -515,9 +544,9 @@ async def psyche_graft(request: Request) -> JSONResponse:
         k = int(body.get("k") or 6)
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     if requested is not None:
         PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.graft(cue, k=k))
@@ -534,9 +563,9 @@ async def psyche_beat(request: Request) -> JSONResponse:
         seat = str(body.get("seat") or body.get("persona") or "Maskaq")
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
     if requested is not None:
         PSYCHE.set_lock(requested)
     return JSONResponse(PSYCHE.beat(cue, seat=seat))
@@ -561,9 +590,9 @@ async def ask(request: Request) -> JSONResponse:
         if not prompt:
             raise ValueError("prompt is required")
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
 
     difficulty = body.get("difficulty")
     turn = await run_turn(
@@ -613,9 +642,9 @@ async def council(request: Request) -> JSONResponse:
         if debate and len(seats) > COUNCIL_DEBATE_MAX:
             seats = seats[:COUNCIL_DEBATE_MAX]
     except _BodyTooLarge as exc:
-        return JSONResponse({"error": str(exc)}, status_code=413)
+        return _client_error(exc, 413)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return _client_error(exc, 400)
 
     result = await _LOUNGE.deliberate(
         prompt,
