@@ -76,21 +76,38 @@ _CLIENT_ERROR_CATALOGUE: tuple[str, ...] = (
     "request body must be a JSON object",
     "no personas selected",
     "unknown persona",
+    "prompt is required",
+    "personas must be a list of names",
     "must be a JSON boolean",
     "conflicting boolean aliases",
 )
+_GENERIC_CLIENT_ERROR = "invalid request body"
+
+
+def _catalogue_entry(text: str) -> str:
+    """Map a message this module raised to its catalogue entry, else the generic text.
+
+    Anchored, never a substring search: the whole message, ``"<entry>: <detail>"``,
+    or ``"<field> must be ..."`` with a single identifier for the field. Request
+    content quoted inside a message (an unknown persona name, a library ``int()``
+    error repeating the value) therefore cannot select a different entry.
+    """
+    for known in _CLIENT_ERROR_CATALOGUE:
+        if text == known or text.startswith(known + ": "):
+            return known
+        if known.startswith("must be "):
+            field, sep, rest = text.partition(" ")
+            if sep and rest == known and field.isidentifier():
+                return known
+    return _GENERIC_CLIENT_ERROR
 
 
 def _client_error(exc: Exception, status: int) -> JSONResponse:
     """Return a fixed, non-leaking error body for a 4xx caused by ``exc``."""
-    text = str(exc)
-    message = "invalid request body"
-    for known in _CLIENT_ERROR_CATALOGUE:
-        if known in text:
-            message = known
-            break
     if status == 413:
         message = _CLIENT_ERROR_CATALOGUE[0]
+    else:
+        message = _catalogue_entry(str(exc))
     return JSONResponse({"error": message}, status_code=status)
 
 
@@ -508,8 +525,8 @@ async def psyche_compose(request: Request) -> JSONResponse:
         requested_imprint = _psyche_boolean(body, "imprint")
         imprint = False if requested_imprint is None else requested_imprint
         requested = _psyche_boolean(body, "human_lock", "humanLock", "lock")
-    except _BodyTooLarge as ext:
-        return JSONResponse({"error": str(ext)}, status_code=413)
+    except _BodyTooLarge as exc:
+        return _client_error(exc, 413)
     except ValueError as exc:
         return _client_error(exc, 400)
     if requested is not None:
