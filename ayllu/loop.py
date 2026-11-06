@@ -34,7 +34,7 @@ def select_tier(query_difficulty: float = 0.5) -> dict[str, Any]:
             "regime": "easy" if route == "small/local" else "hard",
             "role": "advisory",
             "source": "honest-fallback",
-            "note": f"active-flux router unavailable ({str(exc)[:80]}); "
+            "note": f"active-flux router unavailable ({type(exc).__name__}); "
                     "deterministic 0.5 threshold used",
         }
 
@@ -118,7 +118,7 @@ async def run_turn(
             if isinstance(result, dict) and result.get("honesty"):
                 honesty = str(result["honesty"])
         except Exception as exc:
-            honesty = (f"model backend raised: {str(exc)[:120]} "
+            honesty = (f"model backend raised: {type(exc).__name__} "
                        "(honest — no fabricated answer)")
 
     if (

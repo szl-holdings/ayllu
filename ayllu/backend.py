@@ -55,7 +55,8 @@ def _get(url: str, timeout: float = DEFAULT_TIMEOUT, bearer: str | None = None) 
     except urllib.error.HTTPError as exc:
         return int(exc.code), exc.read().decode("utf-8", "replace")
     except Exception as exc:
-        return 0, str(exc)[:160]
+        # Only the exception class crosses the API boundary (CodeQL py/stack-trace-exposure).
+        return 0, type(exc).__name__
 
 
 def _post_json(
@@ -85,7 +86,7 @@ def _post_json(
         except Exception:
             return int(exc.code), {"error": raw[:400]}
     except Exception as exc:
-        return 0, {"error": str(exc)[:160]}
+        return 0, {"error": type(exc).__name__}
 
 
 def _probe_openai(base: str) -> dict[str, Any]:

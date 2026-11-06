@@ -151,7 +151,7 @@ def pull(url: str, timeout: float = 10.0) -> dict[str, Any]:
     except urllib.error.HTTPError as exc:
         return {"ok": False, "status": int(exc.code), "error": f"HTTP {exc.code} from {url}"}
     except Exception as exc:  # noqa: BLE001 — fail-closed
-        return {"ok": False, "status": 0, "error": f"{exc} ({url})"}
+        return {"ok": False, "status": 0, "error": f"{type(exc).__name__} ({url})"}
 
 
 def evaluate_policy(text: str, action: str, human_lock: bool) -> dict[str, Any]:
@@ -361,7 +361,7 @@ def grok_complete(system: str, prompt: str, max_tokens: int = 480) -> dict[str, 
     except Exception as exc:  # noqa: BLE001
         return {
             "ok": False,
-            "text": f"UNAVAILABLE — {exc}",
+            "text": f"UNAVAILABLE — {type(exc).__name__}",
             "honesty": "UNAVAILABLE",
             "model": None,
         }
