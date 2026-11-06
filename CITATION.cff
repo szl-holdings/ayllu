@@ -3,7 +3,6 @@ message: If you use this software, please cite it using the metadata from this f
 type: software
 title: szl-holdings/ayllu — Ayllu Counsel
 version: 1.4.0
-date-released: '2026-11-06'
 license: Apache-2.0
 url: https://huggingface.co/spaces/SZLHOLDINGS/ayllu
 repository-code: https://github.com/szl-holdings/ayllu
