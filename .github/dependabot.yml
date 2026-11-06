@@ -30,6 +30,22 @@ updates:
         patterns:
           - "*"
 
+  # Hash-pinned CI lock (requirements/ci/test.txt, compiled from test.in by uv).
+  - package-ecosystem: "pip"
+    directory: "/requirements/ci"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/New_York"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 5
+    groups:
+      pip-ci:
+        patterns:
+          - "*"
+
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
