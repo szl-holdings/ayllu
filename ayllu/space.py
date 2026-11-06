@@ -207,8 +207,17 @@ def _annotate_manifest() -> None:
             body["organ_grade"] = "PRODUCTION"
             body["legal_authority"] = "PROPOSAL_ONLY"
             body["production"] = "/api/v1/ayllu/production"
-            body["effectiveness"] = "MEASURED"
+            # The label is the gold policy eval's own verdict on this request, never a
+            # constant: local ALLOW/BLOCKED recall on a 10-item toy gold set. Council
+            # (semantic) effectiveness stays NOT_MEASURED (converge.py, HONEST_DISCLOSURE.md).
+            try:
+                evaluation = counsel_eval_from()
+            except Exception:  # noqa: BLE001 — a broken gold set is UNAVAILABLE, never MEASURED
+                evaluation = {}
+            body["effectiveness"] = evaluation.get("effectiveness") or "UNAVAILABLE"
             body["effectiveness_scope"] = "local-policy-ALLOW-BLOCKED"
+            body["effectiveness_eval"] = "/api/v1/counsel/eval"
+            body["council_effectiveness"] = "NOT_MEASURED"
         return body
 
     _rebind("manifest", manifest)
