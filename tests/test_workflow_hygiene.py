@@ -49,3 +49,14 @@ def test_dispatch_inputs_never_ride_in_a_masking_step_env(path: Path) -> None:
         for value in (step.get("env") or {}).values():
             assert "github.event.inputs" not in str(value), f"{path.name}: {step.get('name')}"
             assert "inputs." not in str(value), f"{path.name}: {step.get('name')}"
+
+
+@pytest.mark.parametrize("path", WORKFLOWS, ids=lambda p: p.name)
+def test_dispatch_inputs_never_ride_in_a_masking_step_condition(path: Path) -> None:
+    # With step debug logging on, the runner traces the realized `if:` expression
+    # ("Expanded: ...") before the step runs, so the unmasked value would be printed.
+    for step in _steps(_load(path)):
+        if "add-mask" not in str(step.get("run") or ""):
+            continue
+        condition = str(step.get("if") or "")
+        assert "inputs." not in condition, f"{path.name}: {step.get('name')}"
