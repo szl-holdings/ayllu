@@ -165,3 +165,5 @@ Apache-2.0. Doctrine v11. Λ = Conjecture 1.
 <!-- SZL-PRESERVED-TECHNICAL-BODY:END -->
 
 </details>
+
+Estate on Hugging Face: models, datasets and Spaces are published under the [SZLHOLDINGS](https://huggingface.co/SZLHOLDINGS) org.
