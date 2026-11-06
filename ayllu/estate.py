@@ -4,10 +4,12 @@ Every URL is a public origin. Health is REPORTED from this process only —
 never a claim that a remote Space is LIVE unless this process probed it.
 
 A Hugging Face URL is listed only while that repo exists on the Hub. Retired
-Spaces (lambda-gate-holo, governed-norm-holo, hatun-mcp, anatomy,
-second-brain: absent from https://huggingface.co/api/spaces?author=SZLHOLDINGS
-on 2026-09-29) are not advertised here; their GitHub source is linked instead
-where the source repository is still active.
+Spaces (lambda-gate-holo, governed-norm-holo, hatun-mcp: absent from
+https://huggingface.co/api/spaces?author=SZLHOLDINGS on 2026-09-29 and still
+absent on 2026-11-06) are not advertised here; their GitHub source is linked
+instead where the source repository is still active. SZLHOLDINGS/anatomy and
+SZLHOLDINGS/szl-second-brain were both RUNNING on the Hub on 2026-11-06 and
+are listed. Archived GitHub repositories are not used as an origin.
 """
 from __future__ import annotations
 
@@ -80,8 +82,14 @@ CONSOLIDATED = [
         "name": "Living anatomy",
         "kind": "organism",
         "origin": "https://github.com/szl-holdings/anatomy",
-        "honesty": "Five organs instilled into Ayllu as a SOFTWARE map. GitHub source; the Hub Space is retired.",
-        "urls": ["https://github.com/szl-holdings/anatomy"],
+        "honesty": (
+            "Five organs instilled into Ayllu as a SOFTWARE map. GitHub source and the "
+            "SZLHOLDINGS/anatomy Space; that Space is not embedded here."
+        ),
+        "urls": [
+            "https://github.com/szl-holdings/anatomy",
+            "https://huggingface.co/spaces/SZLHOLDINGS/anatomy",
+        ],
     },
     {
         "name": "Second Brain",
@@ -92,12 +100,15 @@ CONSOLIDATED = [
             "Handles only. YACHAY organ. Never the private 9464-node graph. "
             "Does not overwrite SZLHOLDINGS/SZL-Khipu-1.5B-BrainNavigator."
         ),
-        "urls": ["https://github.com/szl-holdings/szl-second-brain"],
+        "urls": [
+            "https://github.com/szl-holdings/szl-second-brain",
+            "https://huggingface.co/spaces/SZLHOLDINGS/szl-second-brain",
+        ],
     },
     {
         "name": "Ouroboros",
         "kind": "bounded loop",
-        "origin": "https://github.com/szl-holdings/ouroboros",
+        "origin": "https://github.com/szl-holdings/szl-ouroboros",
         "honesty": "Always terminates. receipts.in ≡ receipts.out. Not perpetual motion.",
         "urls": ["https://github.com/szl-holdings/szl-ouroboros"],
     },

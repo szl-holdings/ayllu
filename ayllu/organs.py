@@ -34,7 +34,7 @@ ORGANS = (
         "formula": "F1",
         "seats": ["Amaru", "Maskaq"],
         "color": "#3af4c8",
-        "space": "https://huggingface.co/spaces/SZLHOLDINGS/second-brain",
+        "space": "https://huggingface.co/spaces/SZLHOLDINGS/szl-second-brain",
         "github": "https://github.com/szl-holdings/szl-second-brain",
         "note": (
             "YACHAY points at the public Second Brain Space: SOFTWARE handles-only "
@@ -79,7 +79,7 @@ def anatomy() -> dict[str, Any]:
         "locked_eight": ["F1", "F4", "F7", "F11", "F12", "F18", "F19", "F22"],
         "lambda": "CONJECTURE_1",
         "khipu_bft": "CONJECTURE_2",
-        "yachay_space": "https://huggingface.co/spaces/SZLHOLDINGS/second-brain",
+        "yachay_space": "https://huggingface.co/spaces/SZLHOLDINGS/szl-second-brain",
         "honesty": (
             "SOFTWARE organ map instilled into Ayllu. Not the 3D Anatomy Space. "
             "Not a claim that organs are LIVE GPUs. YACHAY notes the Second Brain "

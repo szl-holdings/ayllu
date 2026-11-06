@@ -335,7 +335,7 @@ function renderBrain(r){
   const state = d.state || "UNAVAILABLE";
   const ready = d.ready_for_grounded_navigation === true ? "READY" : "UNAVAILABLE";
   el.innerHTML = "second brain: " + esc(state) + " · grounded=" + esc(ready) + " · " + esc(d.system_id || "")
-    + ' · YACHAY <a href="https://huggingface.co/spaces/SZLHOLDINGS/second-brain">Space</a>';
+    + ' · YACHAY <a href="https://huggingface.co/spaces/SZLHOLDINGS/szl-second-brain">Space</a>';
 }
 
 function renderHatun(r){
