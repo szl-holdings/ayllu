@@ -31,8 +31,7 @@ tags:
 [Product](https://a-11-oy.com) · [Proof](https://a11oy.net) · [GitHub organization](https://github.com/szl-holdings)
 <!-- /szl:header -->
 
-<!-- Native identity: szl-brand@4309f6fce89179331b0b3ed8c99494e76c5be256; Orbit v2 icon sha256 6e2b7d72a3af3d9602b79de41df0194ede6496a9661f057108ec224c0efc92e6. -->
-<p><a href="https://github.com/szl-holdings"><img src="https://raw.githubusercontent.com/szl-holdings/szl-brand/4309f6fce89179331b0b3ed8c99494e76c5be256/kit/logos/orbit-v2/suite/szl-icon-32.svg" alt="SZL Holdings — Orbit v2" width="32" height="32" /></a></p>
+<!-- Native identity: szl-brand@4309f6fce89179331b0b3ed8c99494e76c5be256; Orbit v2 icon sha256 6e2b7d72a3af3d9602b79de41df0194ede6496a9661f057108ec224c0efc92e6 (the icon in the szl:header block above). -->
 
 # Ayllu · Agent Council
 
@@ -47,6 +46,39 @@ Explore an eleven-seat software council, a legal-matter workspace and memory exp
 - The eleven seats are roles on one routed backend, not eleven separately trained models.
 - Live output requires a reachable configured backend. Missing dependencies remain SOFTWARE or UNAVAILABLE; model output remains unverified.
 - Protected state changes retain two-person attestation and Human Lock. Receipts remain UNSIGNED, and Λ remains Conjecture 1.
+
+## Run and verify
+
+Python 3.11 or newer. CI runs 3.12 and the Space image's 3.15.
+
+```bash
+python -m venv .venv
+. .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -e '.[test]'    # the Space image installs requirements.txt (same runtime deps)
+python -m ayllu.selftest
+python -m pytest
+uvicorn ayllu.space:app --host 127.0.0.1 --port 7860
+```
+
+`ayllu.space:app` is the Space entrypoint (the Dockerfile `CMD`). On top of
+`app:app` it serves `/healthz`, `/livez`, `/api/v1/counsel/eval`,
+`/api/v1/ayllu/production` and the Psyche extras (`/api/v1/psyche/cogitate`,
+`lattice`, `ruray`, `kutiy`, `yuyariy`, `ship`). The full route list is at
+`/docs`. With no backend configured every seat answers SOFTWARE, labeled so.
+
+Replay a receipt. The verifier exits 2 on any digest or signature mismatch:
+
+```bash
+curl -s -X POST http://127.0.0.1:7860/api/v1/ayllu/ask \
+  -H 'content-type: application/json' \
+  -d '{"prompt": "what is your remit?", "persona": "Yupaq"}' \
+  | python -c 'import json, sys; json.dump(json.load(sys.stdin)["receipt"], sys.stdout)' \
+  | python scripts/verify_receipt.py
+```
+
+The technical body below is retained verbatim from an earlier revision. Where
+its run commands differ (a Windows shell, `uvicorn app:app`, which does not
+serve `/healthz`), this section is current.
 
 <details>
 <summary>Technical details and original evidence</summary>
