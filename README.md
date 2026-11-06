@@ -66,7 +66,11 @@ uvicorn ayllu.space:app --host 127.0.0.1 --port 7860
 `lattice`, `ruray`, `kutiy`, `yuyariy`, `ship`). The full route list is at
 `/docs`. With no backend configured every seat answers SOFTWARE, labeled so.
 
-Replay a receipt. The verifier exits 2 on any digest or signature mismatch:
+Replay a receipt. The verifier recomputes the payload's SHA-256 and exits 2 if
+it differs from `payloadSha256`, if a field is malformed, or if the receipt
+claims `signed: true` with no signatures. It does not check signatures or the
+SHA3-256 digest; receipts stay UNSIGNED unless a Cosign signer is injected
+(`HONEST_DISCLOSURE.md`).
 
 ```bash
 curl -s -X POST http://127.0.0.1:7860/api/v1/ayllu/ask \
