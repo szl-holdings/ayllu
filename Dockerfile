@@ -4,7 +4,7 @@
 # multi-arch OCI index Dependabot last resolved for that tag. The CPython release behind
 # a digest is its org.opencontainers.image.version annotation (read the index from
 # mirror.gcr.io). CI's space-python job tests the same minor (.github/workflows/ci.yml).
-FROM mirror.gcr.io/library/python:3.15-slim@sha256:e97b88e416c3c01eb427b21fd8cd3ebf006e6ee38afcfcc3cae1c54ee2ab0a75
+FROM mirror.gcr.io/library/python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=7860
