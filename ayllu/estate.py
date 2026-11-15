@@ -124,7 +124,7 @@ CONSOLIDATED = [
         "kind": "formal corpus",
         "origin": "https://github.com/szl-holdings/lutar-lean",
         "honesty": "Doctrine v11 LOCKED. 749 declarations · 14 axioms · 163 tracked sorries.",
-        "urls": ["https://doi.org/10.5281/zenodo.20434308"],
+        "urls": ["https://doi.org/10.5281/zenodo.24239654"],
     },
 ]
 
