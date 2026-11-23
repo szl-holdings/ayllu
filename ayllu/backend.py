@@ -38,6 +38,24 @@ XAI_BASE = os.environ.get("XAI_BASE_URL", "https://api.x.ai/v1").rstrip("/")
 DEFAULT_TIMEOUT = 2.5
 
 
+def bounded_completion_tokens(requested: int) -> int:
+    """Optional CPU/low-memory output ceiling; never raises the normal request cap.
+
+    Empty or malformed operator configuration fails closed before model I/O.
+    This bounds generation work; it does not establish backend/model readiness.
+    """
+    default = max(1, min(int(requested), 2048))
+    ceiling = os.environ.get("AYLLU_COMPLETION_MAX_TOKENS")
+    if ceiling is None:
+        return default
+    if not ceiling or len(ceiling) > 4 or not ceiling.isascii() or not ceiling.isdecimal():
+        raise ValueError("AYLLU_COMPLETION_MAX_TOKENS_INVALID")
+    value = int(ceiling)
+    if not 1 <= value <= 384:
+        raise ValueError("AYLLU_COMPLETION_MAX_TOKENS_INVALID")
+    return min(default, value)
+
+
 def _headers(extra: dict[str, str] | None = None, bearer: str | None = None) -> dict[str, str]:
     h = {"Accept": "application/json"}
     if extra:
@@ -345,8 +363,8 @@ async def model_complete(
     **_ignored: Any,
 ) -> dict[str, Any]:
     """Adapter matching ayllu.loop.run_turn's model_complete contract."""
+    bounded_tokens = bounded_completion_tokens(max_tokens)
     status = backend_status()
-    bounded_tokens = max(1, min(int(max_tokens), 2048))
     bounded_timeout = max(0.1, min(float(timeout_s), 120.0))
     user_prompt = prompt or ""
     grounding: dict[str, Any] | None = None
